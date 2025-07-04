@@ -24,6 +24,18 @@ export const categories = [
     image: '/assets/images/japanese.jpg',
     description: 'Traditional Japanese motifs and storytelling.'
   },
+  {
+    id: 'geometric',
+    name: 'Geometric',
+    image: '/assets/images/geometric.jpg',
+    description: 'Sharp lines, symmetry, and abstract patterns.'
+  },
+  {
+    id: 'watercolor',
+    name: 'Watercolor',
+    image: '/assets/images/watercolor.jpg',
+    description: 'Vivid, flowing colors that mimic watercolor paintings.'
+  },
 ];
 
 // Artists
