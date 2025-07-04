@@ -1,23 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Header from "./components/Header/Header";
+import HeroBanner from "./components/HeroBanner/HeroBanner";
+import CategoryCarousel from "./components/CategoryCarousel/CategoryCarousel";
+import GoogleReviewWidget from "./components/GoogleReviewWidget/GoogleReviewWidget";
+import ContactUs from "./components/ContactUs/ContactUs";
+import MeetTheArtists from "./components/MeetTheArtists/MeetTheArtists";
+import WhyChooseUs from "./components/WhyChooseUs/WhyChooseUs";
+import InstagramFeed from "./components/InstagramFeed/InstagramFeed";
+import Footer from "./components/Footer/Footer";
+import CategoryPage from "./pages/CategoryPage/CategoryPage";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="bg-offwhite bg-texture min-h-screen text-black">
+      <Router>
+        <Header />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <HeroBanner />
+                <CategoryCarousel />
+                <WhyChooseUs />
+                <MeetTheArtists />
+                <InstagramFeed />
+                <ContactUs />
+              </>
+            }
+          />
+          <Route path="/category/:categoryId" element={<CategoryPage />} />
+        </Routes>
+        <GoogleReviewWidget />
+        <Footer />
+      </Router>
     </div>
   );
 }
