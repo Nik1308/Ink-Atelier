@@ -24,6 +24,7 @@ function App() {
                 <HeroBanner />
                 <CategoryCarousel />
                 <WhyChooseUs />
+                <GoogleReviewWidget />
                 <MeetTheArtists />
                 <InstagramFeed />
                 <ContactUs />
@@ -32,7 +33,6 @@ function App() {
           />
           <Route path="/category/:categoryId" element={<CategoryPage />} />
         </Routes>
-        <GoogleReviewWidget />
         <Footer />
       </Router>
     </div>

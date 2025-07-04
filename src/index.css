@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+.hero-swiper .swiper-pagination {
+  position: absolute;
+  right: 1.5rem; /* Tailwind right-6 */
+  bottom: 1.5rem; /* Tailwind bottom-6 */
+  z-index: 5; /* Lower than overlay, higher than images */
+  display: flex;
+  justify-content: flex-end;
+  width: auto; /* Only as wide as needed */
+  pointer-events: auto;
+  gap: 0.5rem; /* Optional: space between dots */
+  background: none;
+} 
