@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserData, clearAuthData } from '../utils/authUtils';
-import { useAdminData } from '../components/AdminDashboard/useAdminData';
-import CustomersTab from '../components/AdminDashboard/CustomersTab';
+import { useAdminData } from '../components/AdminDashboard/Customer/hooks/useAdminData';
+import CustomersTab from '../components/AdminDashboard/Customer/CustomersTab';
 
 const AccountPage = () => {
   const [userData, setUserData] = useState(null);

@@ -1,5 +1,5 @@
-import { fetchApi } from '../../utils/Fetch';
-import { CUSTOMER_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL, PAYMENT_API_URL } from '../../utils/apiUrls';
+import { fetchApi } from '../../../../utils/Fetch';
+import { CUSTOMER_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL, PAYMENT_API_URL } from '../../../../utils/apiUrls';
 
 export const fetchCustomers = async () => {
   try {
