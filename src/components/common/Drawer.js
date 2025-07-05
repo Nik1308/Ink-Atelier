@@ -10,6 +10,20 @@ const Drawer = ({ open, onClose, children }) => {
     return () => window.removeEventListener('keydown', handleEsc);
   }, [open, onClose]);
 
+  // Prevent background scrolling when drawer is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup function to restore scroll when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [open]);
+
   // Always render for animation, but visually hidden when closed
   return (
     <div className={`fixed inset-0 z-50 flex pointer-events-none`}>

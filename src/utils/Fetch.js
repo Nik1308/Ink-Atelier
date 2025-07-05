@@ -41,7 +41,7 @@ const Fetch = ({ url, options, children }) => {
   return children({ data, loading, error });
 };
 
-export default Fetch;
+export default Fetch; 
 
 /**
  * Utility function for imperative API calls

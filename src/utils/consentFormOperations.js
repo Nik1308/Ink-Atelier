@@ -147,6 +147,7 @@ export async function submitTattooConsentForm(form, setLoading, setError) {
     });
 
     // Step 5: Generate PDF and send via WhatsApp
+    /*
     try {
       await fetchApi(GENERATE_CONSENT_PDF_URL, {
         method: "POST",
@@ -160,6 +161,7 @@ export async function submitTattooConsentForm(form, setLoading, setError) {
       console.error("PDF generation failed:", pdfError);
       // Don't fail the entire submission if PDF generation fails
     }
+    */ // PDF generation and WhatsApp sending is disabled for now
 
     setLoading(false);
     return response;
