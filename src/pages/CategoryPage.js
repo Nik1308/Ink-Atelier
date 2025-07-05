@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { categories } from "../../data/dummyData";
+import { categories } from "../data/dummyData";
 
 const CategoryPage = () => {
   const { categoryId } = useParams();
