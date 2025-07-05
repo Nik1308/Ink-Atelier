@@ -13,10 +13,13 @@ import CategoryPage from "./pages/CategoryPage/CategoryPage";
 import FormsPage from "./pages/FormsPage";
 import TattooConsentFormPage from "./pages/TattooConsentFormPage";
 import PiercingConsentFormPage from "./pages/PiercingConsentFormPage";
+import LoginPage from "./pages/LoginPage";
+import AccountPage from "./pages/AccountPage";
+import PaymentRecordFormPage from "./pages/PaymentRecordFormPage";
 
 function AppContent() {
   const location = useLocation();
-  const hideHeaderRoutes = ["/forms", "/tattoo-consent", "/piercing-consent"];
+  const hideHeaderRoutes = ["/forms", "/tattoo-consent", "/piercing-consent", "/login", "/account"];
   const hideHeader = hideHeaderRoutes.includes(location.pathname);
   return (
     <div className="bg-offwhite bg-texture min-h-screen text-black">
@@ -40,6 +43,9 @@ function AppContent() {
         <Route path="/forms" element={<FormsPage />} />
         <Route path="/tattoo-consent" element={<TattooConsentFormPage />} />
         <Route path="/piercing-consent" element={<PiercingConsentFormPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/account" element={<AccountPage />} />
+        <Route path="/payment-record" element={<PaymentRecordFormPage />} />
       </Routes>
       <Footer />
     </div>
