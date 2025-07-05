@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PAYMENT_API_URL, CUSTOMER_API_URL } from '../utils/apiUrls';
-import { fetchApi } from '../utils/Fetch';
+import { PAYMENT_API_URL, CUSTOMER_API_URL, fetchApi } from '../../utils';
+import FormField from '../../components/forms/FormField';
+import FormSection from '../../components/forms/FormSection';
 
 const initialForm = {
   phone: '',
@@ -48,7 +49,7 @@ const PaymentRecordFormPage = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: `Customer (${phoneNumber})`,
+            name: "",
             phone: formattedPhone,
             email: '',
             date_of_birth: '',
@@ -107,63 +108,46 @@ const PaymentRecordFormPage = () => {
       <div className="bg-white rounded-2xl shadow-2xl border-2 border-black max-w-md w-full p-10 mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-center">Payment Record Form</h2>
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer Phone Number <span className="text-red-500">*</span></label>
-            <div className="flex items-center">
-              <span className="bg-gray-200 border border-gray-400 rounded-l px-3 py-2 text-gray-700 select-none">+91</span>
-              <input
-                name="phone"
-                type="tel"
-                value={form.phone}
-                onChange={handleChange}
-                required
-                pattern="\d{10}"
-                maxLength={10}
-                className="bg-offwhite text-black border-t border-b border-r border-gray-400 rounded-r px-3 py-2 w-full focus:outline-none"
-                style={{ borderLeft: 'none' }}
-                placeholder="10-digit mobile number"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date <span className="text-red-500">*</span></label>
-            <input
-              name="date"
-              type="date"
-              value={form.date}
-              onChange={handleChange}
-              required
-              className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2 w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹) <span className="text-red-500">*</span></label>
-            <input
-              name="amount"
-              type="number"
-              min="1"
-              value={form.amount}
-              onChange={handleChange}
-              required
-              className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2 w-full"
-              placeholder="Enter amount"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Type <span className="text-red-500">*</span></label>
-            <select
-              name="paymentType"
-              value={form.paymentType}
-              onChange={handleChange}
-              required
-              className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2 w-full"
-            >
-              <option value="" disabled>Select payment type</option>
-              <option value="UPI">UPI</option>
-              <option value="Cash">Cash</option>
-              <option value="Card">Card</option>
-            </select>
-          </div>
+          <FormField
+            label="Customer Phone Number"
+            name="phone"
+            type="phone"
+            value={form.phone}
+            onChange={handleChange}
+            required
+            placeholder="10-digit mobile number"
+          />
+          <FormField
+            label="Payment Date"
+            name="date"
+            type="date"
+            value={form.date}
+            onChange={handleChange}
+            required
+          />
+          <FormField
+            label="Amount (₹)"
+            name="amount"
+            type="number"
+            value={form.amount}
+            onChange={handleChange}
+            required
+            min="1"
+            placeholder="Enter amount"
+          />
+          <FormField
+            label="Payment Type"
+            name="paymentType"
+            type="select"
+            value={form.paymentType}
+            onChange={handleChange}
+            required
+            options={[
+              { value: "UPI", label: "UPI" },
+              { value: "Cash", label: "Cash" },
+              { value: "Card", label: "Card" }
+            ]}
+          />
           {error && <div className="text-red-600 text-center">{error}</div>}
           {success && <div className="text-green-700 text-center">{success}</div>}
           <button

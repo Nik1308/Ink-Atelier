@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserData, clearAuthData } from '../utils/authUtils';
-import { useAdminData } from '../components/AdminDashboard/Customer/hooks/useAdminData';
-import CustomersTab from '../components/AdminDashboard/Customer/CustomersTab';
+import { useAdminData } from '../components/admin/Customer/hooks/useAdminData';
+import CustomersTab from '../components/admin/Customer/CustomersTab';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import PageHeader from '../components/common/PageHeader';
 
-const AccountPage = () => {
+const AdminPage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('customers');
@@ -14,10 +16,6 @@ const AccountPage = () => {
   const { customers, consentForms, payments, loading: dataLoading, error, refreshData } = useAdminData(userData, activeTab);
 
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = () => {
     const userData = getUserData();
 
     if (!userData) {
@@ -27,7 +25,7 @@ const AccountPage = () => {
 
     setUserData(userData);
     setLoading(false);
-  };
+  }, [navigate]);
 
   const handleLogout = () => {
     clearAuthData();
@@ -37,10 +35,7 @@ const AccountPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -64,23 +59,18 @@ const AccountPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="px-4 py-6 sm:px-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Welcome back, {userData?.name || 'Admin'}!
-              </p>
-            </div>
+        <PageHeader
+          title="Admin Dashboard"
+          subtitle={`Welcome back, ${userData?.name || 'Admin'}!`}
+          action={
             <button
               onClick={handleLogout}
               className="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               Sign Out
             </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Navigation Tabs */}
         <div className="px-4 sm:px-0">
@@ -120,4 +110,4 @@ const AccountPage = () => {
   );
 };
 
-export default AccountPage; 
+export default AdminPage; 

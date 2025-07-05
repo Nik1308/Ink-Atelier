@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../utils/Fetch';
-import { storeAuthToken } from '../utils/authUtils';
+import { storeAuthToken, getUserData } from '../utils/authUtils';
 import { LOGIN_API_URL } from '../utils/apiUrls';
 
 const LoginPage = () => {
@@ -12,6 +12,14 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // Check if user is already logged in on component mount
+  useEffect(() => {
+    const userData = getUserData();
+    if (userData) {
+      navigate('/admin');
+    }
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -39,8 +47,8 @@ const LoginPage = () => {
         // Store the token with 90-day expiration
         storeAuthToken(response.authToken, response.user || {});
         
-        // Redirect to account page
-        navigate('/account');
+        // Redirect to admin page
+        navigate('/admin');
       } else {
         setError('Login failed. Please check your credentials.');
       }

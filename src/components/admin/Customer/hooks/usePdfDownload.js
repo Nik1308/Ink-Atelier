@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GENERATE_PDF_ONLY_URL } from '../../../../utils/apiUrls';
+import { GENERATE_PDF_ONLY_URL } from '../../../../utils';
 
 export const usePdfDownload = () => {
   const [downloading, setDownloading] = useState(false);
