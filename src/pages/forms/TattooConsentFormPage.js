@@ -4,6 +4,7 @@ import { submitTattooConsentForm, consentStatementsTattoo } from "../../utils";
 import FormField from "../../components/forms/FormField";
 import FormSection from "../../components/forms/FormSection";
 import RadioGroup from "../../components/forms/RadioGroup";
+import SEO from "../../components/SEO/SEO";
 
 const initialForm = {
   name: "",
@@ -92,178 +93,188 @@ const TattooConsentFormPage = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#f7f5f2] flex flex-col items-center justify-center py-16 px-2">
-      <div className="bg-white rounded-2xl shadow-2xl border-2 border-black max-w-3xl w-full p-10 mx-auto">
-        <h2 className="text-3xl font-serif font-bold mb-6 text-center">Permanent Tattoo Consent Form</h2>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          {/* Client Information */}
-          <FormSection title="Client Information">
-            <FormField
-              label="Full Name"
-              name="name"
-              type="text"
-              value={form.name}
-              onChange={handleChange}
-              required
-              placeholder="Full Name"
-            />
-            <FormField
-              label="Date of Birth"
-              name="dob"
-              type="date"
-              value={form.dob}
-              onChange={handleChange}
-              required
-              placeholder="Date of Birth"
-            />
-            <FormField
-              label="Address"
-              name="address"
-              type="text"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Address"
-            />
-            <FormField
-              label="Phone Number"
-              name="phone"
-              type="tel"
-              value={form.phone}
-              onChange={handleChange}
-              required
-              placeholder="Phone Number"
-            />
-            <FormField
-              label="Email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Email"
-            />
-          </FormSection>
-
-          {/* Tattoo Information */}
-          <FormSection title="Tattoo Information">
-            <div className="flex flex-col gap-2">
+    <>
+      <SEO 
+        title="Tattoo Consent Form - Ink Atelier"
+        description="Complete your tattoo consent form online. Required legal document for all tattoo procedures at Ink Atelier. Safe and secure form submission."
+        keywords="tattoo consent form, tattoo waiver, tattoo legal document, tattoo consent online, ink atelier consent form, tattoo procedure consent"
+        image="/assets/images/logo.jpg"
+        url="https://inkatelier.in/tattoo-consent"
+        type="website"
+      />
+      <section className="min-h-screen bg-[#f7f5f2] flex flex-col items-center justify-center py-16 px-2">
+        <div className="bg-white rounded-2xl shadow-2xl border-2 border-black max-w-3xl w-full p-10 mx-auto">
+          <h2 className="text-3xl font-serif font-bold mb-6 text-center">Permanent Tattoo Consent Form</h2>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            {/* Client Information */}
+            <FormSection title="Client Information">
               <FormField
-                label="Tattoo Design"
-                name="tattooDesign"
-                type="file"
-                value={form.tattooDesign}
+                label="Full Name"
+                name="name"
+                type="text"
+                value={form.name}
                 onChange={handleChange}
                 required
-                accept="image/*"
-                ref={tattooDesignInputRef}
+                placeholder="Full Name"
               />
-              {tattooDesignPreview && (
-                <div className="mt-2">
-                  <img src={tattooDesignPreview} alt="Tattoo Design Preview" className="max-w-xs max-h-48 object-contain border border-gray-300 rounded" />
-                </div>
-              )}
-            </div>
-            <FormField
-              label="Tattoo Location"
-              name="tattooLocation"
-              type="text"
-              value={form.tattooLocation}
-              onChange={handleChange}
-              required
-              placeholder="Tattoo Location"
-            />
-            <FormField
-              label="Tattoo Artist"
-              name="tattooArtist"
-              type="text"
-              value={form.tattooArtist}
-              onChange={handleChange}
-              required
-              placeholder="Tattoo Artist"
-            />
-            <FormField
-              label="Date of Tattoo"
-              name="tattooDate"
-              type="date"
-              value={form.tattooDate}
-              onChange={handleChange}
-              required
-              placeholder="Date of Tattoo"
-            />
-          </FormSection>
+              <FormField
+                label="Date of Birth"
+                name="dob"
+                type="date"
+                value={form.dob}
+                onChange={handleChange}
+                required
+                placeholder="Date of Birth"
+              />
+              <FormField
+                label="Address"
+                name="address"
+                type="text"
+                value={form.address}
+                onChange={handleChange}
+                placeholder="Address"
+              />
+              <FormField
+                label="Phone Number"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                required
+                placeholder="Phone Number"
+              />
+              <FormField
+                label="Email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email"
+              />
+            </FormSection>
 
-          {/* Health Information */}
-          <FormSection title="Health Information">
-            <RadioGroup
-              question="1. Are you currently taking any medications?"
-              name="medications"
-              value={form.medications}
-              onChange={handleChange}
-              required
-              showTextarea={true}
-              textareaName="medicationsList"
-              textareaValue={form.medicationsList}
-              textareaPlaceholder="If yes, please list"
-            />
-            <RadioGroup
-              question="2. Do you have any allergies (including to latex or ink)?"
-              name="allergies"
-              value={form.allergies}
-              onChange={handleChange}
-              required
-              showTextarea={true}
-              textareaName="allergiesList"
-              textareaValue={form.allergiesList}
-              textareaPlaceholder="If yes, please list"
-            />
-            <RadioGroup
-              question="3. Do you have any medical conditions (e.g., diabetes, epilepsy, heart conditions, etc.)?"
-              name="medicalConditions"
-              value={form.medicalConditions}
-              onChange={handleChange}
-              required
-              showTextarea={true}
-              textareaName="medicalConditionsList"
-              textareaValue={form.medicalConditionsList}
-              textareaPlaceholder="If yes, please specify"
-            />
-            <RadioGroup
-              question="4. Have you consumed alcohol or any drugs in the past 24 hours?"
-              name="alcoholDrugs"
-              value={form.alcoholDrugs}
-              onChange={handleChange}
-              required
-            />
-            <RadioGroup
-              question="5. Are you pregnant or nursing?"
-              name="pregnantNursing"
-              value={form.pregnantNursing}
-              onChange={handleChange}
-              required
-            />
-          </FormSection>
+            {/* Tattoo Information */}
+            <FormSection title="Tattoo Information">
+              <div className="flex flex-col gap-2">
+                <FormField
+                  label="Tattoo Design"
+                  name="tattooDesign"
+                  type="file"
+                  value={form.tattooDesign}
+                  onChange={handleChange}
+                  required
+                  accept="image/*"
+                  ref={tattooDesignInputRef}
+                />
+                {tattooDesignPreview && (
+                  <div className="mt-2">
+                    <img src={tattooDesignPreview} alt="Tattoo Design Preview" className="max-w-xs max-h-48 object-contain border border-gray-300 rounded" />
+                  </div>
+                )}
+              </div>
+              <FormField
+                label="Tattoo Location"
+                name="tattooLocation"
+                type="text"
+                value={form.tattooLocation}
+                onChange={handleChange}
+                required
+                placeholder="Tattoo Location"
+              />
+              <FormField
+                label="Tattoo Artist"
+                name="tattooArtist"
+                type="text"
+                value={form.tattooArtist}
+                onChange={handleChange}
+                required
+                placeholder="Tattoo Artist"
+              />
+              <FormField
+                label="Date of Tattoo"
+                name="tattooDate"
+                type="date"
+                value={form.tattooDate}
+                onChange={handleChange}
+                required
+                placeholder="Date of Tattoo"
+              />
+            </FormSection>
 
-          {/* Acknowledgement and Consent */}
-          <div className="font-bold text-lg mb-2 mt-4">Acknowledgement and Consent</div>
-          <ul className="list-disc pl-6 text-left text-sm md:text-base text-black/90 mb-2">
-            {consentStatementsTattoo.map((statement, idx) => (
-              <li key={idx} className="mb-1">{statement}</li>
-            ))}
-          </ul>
-          <label className="flex items-center gap-2 mt-2">
-            <input name="agree" type="checkbox" checked={form.agree} onChange={handleChange} required />
-            <span className="flex items-center gap-1">
-              I have read and agree to the consent statement above. <span className="text-red-500">*</span>
-            </span>
-          </label>
+            {/* Health Information */}
+            <FormSection title="Health Information">
+              <RadioGroup
+                question="1. Are you currently taking any medications?"
+                name="medications"
+                value={form.medications}
+                onChange={handleChange}
+                required
+                showTextarea={true}
+                textareaName="medicationsList"
+                textareaValue={form.medicationsList}
+                textareaPlaceholder="If yes, please list"
+              />
+              <RadioGroup
+                question="2. Do you have any allergies (including to latex or ink)?"
+                name="allergies"
+                value={form.allergies}
+                onChange={handleChange}
+                required
+                showTextarea={true}
+                textareaName="allergiesList"
+                textareaValue={form.allergiesList}
+                textareaPlaceholder="If yes, please list"
+              />
+              <RadioGroup
+                question="3. Do you have any medical conditions (e.g., diabetes, epilepsy, heart conditions, etc.)?"
+                name="medicalConditions"
+                value={form.medicalConditions}
+                onChange={handleChange}
+                required
+                showTextarea={true}
+                textareaName="medicalConditionsList"
+                textareaValue={form.medicalConditionsList}
+                textareaPlaceholder="If yes, please specify"
+              />
+              <RadioGroup
+                question="4. Have you consumed alcohol or any drugs in the past 24 hours?"
+                name="alcoholDrugs"
+                value={form.alcoholDrugs}
+                onChange={handleChange}
+                required
+              />
+              <RadioGroup
+                question="5. Are you pregnant or nursing?"
+                name="pregnantNursing"
+                value={form.pregnantNursing}
+                onChange={handleChange}
+                required
+              />
+            </FormSection>
 
-          <button type="submit" className="bg-black text-offwhite rounded-full px-6 py-2 font-bold shadow hover:bg-gray-800 transition mt-4" disabled={loading}>
-            {loading ? "Submitting..." : "Submit Consent"}
-          </button>
-        </form>
-        {error && <div className="text-red-600 mt-4 text-center">{error}</div>}
-        {success && <div className="text-green-700 mt-4 text-center">{success}</div>}
-      </div>
-    </section>
+            {/* Acknowledgement and Consent */}
+            <div className="font-bold text-lg mb-2 mt-4">Acknowledgement and Consent</div>
+            <ul className="list-disc pl-6 text-left text-sm md:text-base text-black/90 mb-2">
+              {consentStatementsTattoo.map((statement, idx) => (
+                <li key={idx} className="mb-1">{statement}</li>
+              ))}
+            </ul>
+            <label className="flex items-center gap-2 mt-2">
+              <input name="agree" type="checkbox" checked={form.agree} onChange={handleChange} required />
+              <span className="flex items-center gap-1">
+                I have read and agree to the consent statement above. <span className="text-red-500">*</span>
+              </span>
+            </label>
+
+            <button type="submit" className="bg-black text-offwhite rounded-full px-6 py-2 font-bold shadow hover:bg-gray-800 transition mt-4" disabled={loading}>
+              {loading ? "Submitting..." : "Submit Consent"}
+            </button>
+          </form>
+          {error && <div className="text-red-600 mt-4 text-center">{error}</div>}
+          {success && <div className="text-green-700 mt-4 text-center">{success}</div>}
+        </div>
+      </section>
+    </>
   );
 };
 

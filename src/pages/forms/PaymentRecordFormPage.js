@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PAYMENT_API_URL, CUSTOMER_API_URL, fetchApi } from '../../utils';
 import FormField from '../../components/forms/FormField';
 import FormSection from '../../components/forms/FormSection';
+import SEO from '../../components/SEO/SEO';
 
 const initialForm = {
   phone: '',
@@ -104,62 +105,72 @@ const PaymentRecordFormPage = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#f7f5f2] flex flex-col items-center justify-center py-16 px-2">
-      <div className="bg-white rounded-2xl shadow-2xl border-2 border-black max-w-md w-full p-10 mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-center">Payment Record Form</h2>
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          <FormField
-            label="Customer Phone Number"
-            name="phone"
-            type="phone"
-            value={form.phone}
-            onChange={handleChange}
-            required
-            placeholder="10-digit mobile number"
-          />
-          <FormField
-            label="Payment Date"
-            name="date"
-            type="date"
-            value={form.date}
-            onChange={handleChange}
-            required
-          />
-          <FormField
-            label="Amount (₹)"
-            name="amount"
-            type="number"
-            value={form.amount}
-            onChange={handleChange}
-            required
-            min="1"
-            placeholder="Enter amount"
-          />
-          <FormField
-            label="Payment Type"
-            name="paymentType"
-            type="select"
-            value={form.paymentType}
-            onChange={handleChange}
-            required
-            options={[
-              { value: "UPI", label: "UPI" },
-              { value: "Cash", label: "Cash" },
-              { value: "Card", label: "Card" }
-            ]}
-          />
-          {error && <div className="text-red-600 text-center">{error}</div>}
-          {success && <div className="text-green-700 text-center">{success}</div>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-black text-offwhite rounded-full px-6 py-2 font-bold shadow hover:bg-gray-800 transition mt-2 disabled:opacity-60"
-          >
-            {loading ? 'Submitting...' : 'Submit Payment'}
-          </button>
-        </form>
-      </div>
-    </section>
+    <>
+      <SEO 
+        title="Payment Record Form - Ink Atelier"
+        description="Submit your payment record for tattoo or piercing services. Track your payments and maintain accurate records at Ink Atelier."
+        keywords="payment record form, tattoo payment, piercing payment, payment tracking, ink atelier payment, body art payment record"
+        image="/assets/images/logo.jpg"
+        url="https://inkatelier.in/payment-record"
+        type="website"
+      />
+      <section className="min-h-screen bg-[#f7f5f2] flex flex-col items-center justify-center py-16 px-2">
+        <div className="bg-white rounded-2xl shadow-2xl border-2 border-black max-w-md w-full p-10 mx-auto">
+          <h2 className="text-2xl font-bold mb-6 text-center">Payment Record Form</h2>
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+            <FormField
+              label="Customer Phone Number"
+              name="phone"
+              type="phone"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              placeholder="10-digit mobile number"
+            />
+            <FormField
+              label="Payment Date"
+              name="date"
+              type="date"
+              value={form.date}
+              onChange={handleChange}
+              required
+            />
+            <FormField
+              label="Amount (₹)"
+              name="amount"
+              type="number"
+              value={form.amount}
+              onChange={handleChange}
+              required
+              min="1"
+              placeholder="Enter amount"
+            />
+            <FormField
+              label="Payment Type"
+              name="paymentType"
+              type="select"
+              value={form.paymentType}
+              onChange={handleChange}
+              required
+              options={[
+                { value: "UPI", label: "UPI" },
+                { value: "Cash", label: "Cash" },
+                { value: "Card", label: "Card" }
+              ]}
+            />
+            {error && <div className="text-red-600 text-center">{error}</div>}
+            {success && <div className="text-green-700 text-center">{success}</div>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-black text-offwhite rounded-full px-6 py-2 font-bold shadow hover:bg-gray-800 transition mt-2 disabled:opacity-60"
+            >
+              {loading ? 'Submitting...' : 'Submit Payment'}
+            </button>
+          </form>
+        </div>
+      </section>
+    </>
   );
 };
 

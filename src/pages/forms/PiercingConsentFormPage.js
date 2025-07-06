@@ -4,6 +4,7 @@ import { submitPiercingConsentForm, consentStatementsPiercing } from "../../util
 import FormField from "../../components/forms/FormField";
 import FormSection from "../../components/forms/FormSection";
 import RadioGroup from "../../components/forms/RadioGroup";
+import SEO from "../../components/SEO/SEO";
 
 const initialForm = {
   name: "",
@@ -66,170 +67,180 @@ const PiercingConsentFormPage = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#f7f5f2] flex flex-col items-center justify-center py-16 px-2">
-      <div className="bg-white rounded-2xl shadow-2xl border-2 border-black max-w-3xl w-full p-10 mx-auto">
-        <h2 className="text-3xl font-serif font-bold mb-6 text-center">Body Piercing Consent Form</h2>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          {/* Client Information */}
-          <FormSection title="Client Information">
-            <FormField
-              label="Full Name"
-              name="name"
-              type="text"
-              value={form.name}
-              onChange={handleChange}
-              required
-              placeholder="Full Name"
-            />
-            <FormField
-              label="Date of Birth"
-              name="dob"
-              type="date"
-              value={form.dob}
-              onChange={handleChange}
-              required
-              placeholder="Date of Birth"
-            />
-            <FormField
-              label="Address"
-              name="address"
-              type="text"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Address"
-            />
-            <FormField
-              label="Phone Number"
-              name="phone"
-              type="tel"
-              value={form.phone}
-              onChange={handleChange}
-              required
-              placeholder="Phone Number"
-            />
-            <FormField
-              label="Email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Email"
-            />
-          </FormSection>
+    <>
+      <SEO 
+        title="Piercing Consent Form - Ink Atelier"
+        description="Complete your piercing consent form online. Required legal document for all body piercing procedures at Ink Atelier. Safe and secure form submission."
+        keywords="piercing consent form, body piercing waiver, piercing legal document, piercing consent online, ink atelier piercing consent, body piercing procedure consent"
+        image="/assets/images/logo.jpg"
+        url="https://inkatelier.in/piercing-consent"
+        type="website"
+      />
+      <section className="min-h-screen bg-[#f7f5f2] flex flex-col items-center justify-center py-16 px-2">
+        <div className="bg-white rounded-2xl shadow-2xl border-2 border-black max-w-3xl w-full p-10 mx-auto">
+          <h2 className="text-3xl font-serif font-bold mb-6 text-center">Body Piercing Consent Form</h2>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            {/* Client Information */}
+            <FormSection title="Client Information">
+              <FormField
+                label="Full Name"
+                name="name"
+                type="text"
+                value={form.name}
+                onChange={handleChange}
+                required
+                placeholder="Full Name"
+              />
+              <FormField
+                label="Date of Birth"
+                name="dob"
+                type="date"
+                value={form.dob}
+                onChange={handleChange}
+                required
+                placeholder="Date of Birth"
+              />
+              <FormField
+                label="Address"
+                name="address"
+                type="text"
+                value={form.address}
+                onChange={handleChange}
+                placeholder="Address"
+              />
+              <FormField
+                label="Phone Number"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                required
+                placeholder="Phone Number"
+              />
+              <FormField
+                label="Email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email"
+              />
+            </FormSection>
 
-          {/* Piercing Information */}
-          <FormSection title="Piercing Information">
-            <FormField
-              label="Type of Piercing"
-              name="piercingType"
-              type="text"
-              value={form.piercingType}
-              onChange={handleChange}
-              required
-              placeholder="Type of Piercing"
-            />
-            <FormField
-              label="Piercing Location"
-              name="piercingLocation"
-              type="text"
-              value={form.piercingLocation}
-              onChange={handleChange}
-              required
-              placeholder="Piercing Location"
-            />
-            <FormField
-              label="Piercing Artist"
-              name="piercingArtist"
-              type="text"
-              value={form.piercingArtist}
-              onChange={handleChange}
-              required
-              placeholder="Piercing Artist"
-            />
-            <FormField
-              label="Date of Piercing"
-              name="piercingDate"
-              type="date"
-              value={form.piercingDate}
-              onChange={handleChange}
-              required
-              placeholder="Date of Piercing"
-            />
-          </FormSection>
+            {/* Piercing Information */}
+            <FormSection title="Piercing Information">
+              <FormField
+                label="Type of Piercing"
+                name="piercingType"
+                type="text"
+                value={form.piercingType}
+                onChange={handleChange}
+                required
+                placeholder="Type of Piercing"
+              />
+              <FormField
+                label="Piercing Location"
+                name="piercingLocation"
+                type="text"
+                value={form.piercingLocation}
+                onChange={handleChange}
+                required
+                placeholder="Piercing Location"
+              />
+              <FormField
+                label="Piercing Artist"
+                name="piercingArtist"
+                type="text"
+                value={form.piercingArtist}
+                onChange={handleChange}
+                required
+                placeholder="Piercing Artist"
+              />
+              <FormField
+                label="Date of Piercing"
+                name="piercingDate"
+                type="date"
+                value={form.piercingDate}
+                onChange={handleChange}
+                required
+                placeholder="Date of Piercing"
+              />
+            </FormSection>
 
-          {/* Health Information */}
-          <FormSection title="Health Information">
-            <RadioGroup
-              question="1. Are you currently taking any medications?"
-              name="medications"
-              value={form.medications}
-              onChange={handleChange}
-              required
-              showTextarea={true}
-              textareaName="medicationsList"
-              textareaValue={form.medicationsList}
-              textareaPlaceholder="If yes, please list"
-            />
-            <RadioGroup
-              question="2. Do you have any allergies (including to latex or metals)?"
-              name="allergies"
-              value={form.allergies}
-              onChange={handleChange}
-              required
-              showTextarea={true}
-              textareaName="allergiesList"
-              textareaValue={form.allergiesList}
-              textareaPlaceholder="If yes, please list"
-            />
-            <RadioGroup
-              question="3. Do you have any medical conditions (e.g., diabetes, epilepsy, heart conditions, etc.)?"
-              name="medicalConditions"
-              value={form.medicalConditions}
-              onChange={handleChange}
-              required
-              showTextarea={true}
-              textareaName="medicalConditionsList"
-              textareaValue={form.medicalConditionsList}
-              textareaPlaceholder="If yes, please specify"
-            />
-            <RadioGroup
-              question="4. Have you consumed alcohol or any drugs in the past 24 hours?"
-              name="alcoholDrugs"
-              value={form.alcoholDrugs}
-              onChange={handleChange}
-              required
-            />
-            <RadioGroup
-              question="5. Are you pregnant or nursing?"
-              name="pregnantNursing"
-              value={form.pregnantNursing}
-              onChange={handleChange}
-              required
-            />
-          </FormSection>
+            {/* Health Information */}
+            <FormSection title="Health Information">
+              <RadioGroup
+                question="1. Are you currently taking any medications?"
+                name="medications"
+                value={form.medications}
+                onChange={handleChange}
+                required
+                showTextarea={true}
+                textareaName="medicationsList"
+                textareaValue={form.medicationsList}
+                textareaPlaceholder="If yes, please list"
+              />
+              <RadioGroup
+                question="2. Do you have any allergies (including to latex or metals)?"
+                name="allergies"
+                value={form.allergies}
+                onChange={handleChange}
+                required
+                showTextarea={true}
+                textareaName="allergiesList"
+                textareaValue={form.allergiesList}
+                textareaPlaceholder="If yes, please list"
+              />
+              <RadioGroup
+                question="3. Do you have any medical conditions (e.g., diabetes, epilepsy, heart conditions, etc.)?"
+                name="medicalConditions"
+                value={form.medicalConditions}
+                onChange={handleChange}
+                required
+                showTextarea={true}
+                textareaName="medicalConditionsList"
+                textareaValue={form.medicalConditionsList}
+                textareaPlaceholder="If yes, please specify"
+              />
+              <RadioGroup
+                question="4. Have you consumed alcohol or any drugs in the past 24 hours?"
+                name="alcoholDrugs"
+                value={form.alcoholDrugs}
+                onChange={handleChange}
+                required
+              />
+              <RadioGroup
+                question="5. Are you pregnant or nursing?"
+                name="pregnantNursing"
+                value={form.pregnantNursing}
+                onChange={handleChange}
+                required
+              />
+            </FormSection>
 
-          {/* Acknowledgement and Consent */}
-          <div className="font-bold text-lg mb-2 mt-4">Acknowledgement and Consent</div>
-          <ul className="list-disc pl-6 text-left text-sm md:text-base text-black/90 mb-2">
-            {consentStatementsPiercing.map((statement, idx) => (
-              <li key={idx} className="mb-1">{statement}</li>
-            ))}
-          </ul>
-          <label className="flex items-center gap-2 mt-2">
-            <input name="agree" type="checkbox" checked={form.agree} onChange={handleChange} required />
-            <span className="flex items-center gap-1">
-              I have read and agree to the consent statement above. <span className="text-red-500">*</span>
-            </span>
-          </label>
+            {/* Acknowledgement and Consent */}
+            <div className="font-bold text-lg mb-2 mt-4">Acknowledgement and Consent</div>
+            <ul className="list-disc pl-6 text-left text-sm md:text-base text-black/90 mb-2">
+              {consentStatementsPiercing.map((statement, idx) => (
+                <li key={idx} className="mb-1">{statement}</li>
+              ))}
+            </ul>
+            <label className="flex items-center gap-2 mt-2">
+              <input name="agree" type="checkbox" checked={form.agree} onChange={handleChange} required />
+              <span className="flex items-center gap-1">
+                I have read and agree to the consent statement above. <span className="text-red-500">*</span>
+              </span>
+            </label>
 
-          <button type="submit" className="bg-black text-offwhite rounded-full px-6 py-2 font-bold shadow hover:bg-gray-800 transition mt-4" disabled={loading}>
-            {loading ? "Submitting..." : "Submit Consent"}
-          </button>
-        </form>
-        {error && <div className="text-red-600 mt-4 text-center">{error}</div>}
-        {success && <div className="text-green-700 mt-4 text-center">{success}</div>}
-      </div>
-    </section>
+            <button type="submit" className="bg-black text-offwhite rounded-full px-6 py-2 font-bold shadow hover:bg-gray-800 transition mt-4" disabled={loading}>
+              {loading ? "Submitting..." : "Submit Consent"}
+            </button>
+          </form>
+          {error && <div className="text-red-600 mt-4 text-center">{error}</div>}
+          {success && <div className="text-green-700 mt-4 text-center">{success}</div>}
+        </div>
+      </section>
+    </>
   );
 };
 

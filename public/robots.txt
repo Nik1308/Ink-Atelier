@@ -1,3 +1,17 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap
+Sitemap: https://inkatelier.in/sitemap.xml
+
+# Disallow admin and login pages from search engines
+Disallow: /admin
+Disallow: /login
+
+# Allow all other pages
+Allow: /forms
+Allow: /tattoo-consent
+Allow: /piercing-consent
+Allow: /payment-record
+Allow: /category/
