@@ -8,6 +8,7 @@ const initialForm = {
   date: new Date().toISOString().slice(0, 10),
   amount: '',
   paymentType: '',
+  service: '',
 };
 
 const PaymentRecordTab = () => {
@@ -26,6 +27,7 @@ const PaymentRecordTab = () => {
     if (!form.date) return 'Date is required.';
     if (!form.amount || isNaN(form.amount) || Number(form.amount) < 1) return 'Enter a valid amount.';
     if (!form.paymentType) return 'Select a payment type.';
+    if (!form.service) return 'Select a service.';
     return null;
   };
 
@@ -88,6 +90,7 @@ const PaymentRecordTab = () => {
           payment_date: form.date,
           amount: Number(form.amount),
           payment_type: form.paymentType,
+          service: form.service,
         }),
       });
       
@@ -120,6 +123,20 @@ const PaymentRecordTab = () => {
           onChange={handleChange}
           required
           placeholder="10-digit mobile number"
+          inputClassName="w-full max-w-[400px]"
+        />
+        
+        <FormField
+          label="Service"
+          name="service"
+          type="select"
+          value={form.service}
+          onChange={handleChange}
+          required
+          options={[
+            { value: "tattoo", label: "Tattoo" },
+            { value: "piercing", label: "Piercing" }
+          ]}
           inputClassName="w-full max-w-[400px]"
         />
         
