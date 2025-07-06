@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getUserData, clearAuthData } from '../utils/authUtils';
 import { useAdminData } from '../components/admin/Customer/hooks/useAdminData';
 import CustomersTab from '../components/admin/Customer/CustomersTab';
+import PaymentRecordTab from '../components/admin/Customer/PaymentRecordTab';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import PageHeader from '../components/common/PageHeader';
 import SEO from '../components/SEO/SEO';
@@ -116,6 +117,16 @@ const AdminPage = () => {
                 >
                   Customers
                 </button>
+                <button
+                  onClick={() => setActiveTab('payment-record')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'payment-record'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Payment Record
+                </button>
               </nav>
             </div>
           </div>
@@ -132,6 +143,9 @@ const AdminPage = () => {
                   error={error}
                   onRefresh={refreshData}
                 />
+              )}
+              {activeTab === 'payment-record' && (
+                <PaymentRecordTab />
               )}
             </div>
           </div>
