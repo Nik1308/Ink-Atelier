@@ -9,7 +9,10 @@ import TattooConsentFormPage from "./pages/forms/TattooConsentFormPage";
 import PiercingConsentFormPage from "./pages/forms/PiercingConsentFormPage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
+// import PaymentRecordFormPage from "./pages/forms/PaymentRecordFormPage";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+const queryClient = new QueryClient();
 
 function AppContent() {
   const location = useLocation();
@@ -28,7 +31,7 @@ function AppContent() {
         <Route path="/piercing-consent" element={<PiercingConsentFormPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<AdminPage />} />
-
+        {/* <Route path="/payment-record" element={<PaymentRecordFormPage />} /> */}
       </Routes>
       {!hideFooter && <Footer />}
     </div>
@@ -37,8 +40,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AppContent />
+      </Router>
+    </QueryClientProvider>
   );
 }

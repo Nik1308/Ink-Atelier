@@ -54,7 +54,7 @@ const LoginPage = () => {
         setError('Login failed. Please check your credentials.');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      // console.error('Login error:', error);
       setError(error.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);

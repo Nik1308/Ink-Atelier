@@ -143,8 +143,7 @@ const handleReferralTracking = async (currentCustomerId, form, setError) => {
         });
       }
     } catch (error) {
-      console.error("Referral tracking failed:", error);
-      // Don't fail the entire submission if referral tracking fails
+      // console.error("Referral tracking failed:", error);
     }
   }
 };
@@ -267,8 +266,7 @@ export async function submitPiercingConsentForm(form, setLoading, setError) {
         }),
       });
     } catch (pdfError) {
-      console.error("PDF generation failed:", pdfError);
-      // Don't fail the entire submission if PDF generation fails
+      // console.error("PDF generation failed:", pdfError);
     }
 
     setLoading(false);

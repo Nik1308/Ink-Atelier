@@ -34,40 +34,6 @@ const initialForm = {
 
 const isValidPhone = (value) => /^\d{0,10}$/.test(value);
 
-const healthQuestions = [
-  {
-    question: "1. Are you currently taking any medications?",
-    name: "medications",
-    showTextarea: true,
-    textareaName: "medicationsList",
-    textareaPlaceholder: "If yes, please list",
-  },
-  {
-    question: "2. Do you have any allergies (including to latex or ink)?",
-    name: "allergies",
-    showTextarea: true,
-    textareaName: "allergiesList",
-    textareaPlaceholder: "If yes, please list",
-  },
-  {
-    question: "3. Do you have any medical conditions (e.g., diabetes, epilepsy, heart conditions, etc.)?",
-    name: "medicalConditions",
-    showTextarea: true,
-    textareaName: "medicalConditionsList",
-    textareaPlaceholder: "If yes, please specify",
-  },
-  {
-    question: "4. Have you consumed alcohol or any drugs in the past 24 hours?",
-    name: "alcoholDrugs",
-    showTextarea: false,
-  },
-  {
-    question: "5. Are you pregnant or nursing?",
-    name: "pregnantNursing",
-    showTextarea: false,
-  },
-];
-
 const TattooConsentFormPage = () => {
   const [form, setForm] = useState(initialForm);
   const [step, setStep] = useState(1);
@@ -76,7 +42,6 @@ const TattooConsentFormPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
-  const [healthStep, setHealthStep] = useState(0);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -104,7 +69,7 @@ const TattooConsentFormPage = () => {
 
   // Phone step logic
   const handlePhoneChange = (e) => {
-    let value = e.target.value.replace(/\D/g, "");
+    const value = e.target.value.replace(/\D/g, "");
     if (!isValidPhone(value)) return;
     setForm((f) => ({ ...f, phone: value }));
   };
