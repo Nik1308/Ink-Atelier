@@ -22,6 +22,13 @@ const CustomersTab = ({ customers, consentForms, payments, loading, error, onRef
     searchQuery
   );
 
+  // Sort customers by created_at descending (newest first)
+  const sortedFilteredCustomers = [...filteredCustomers].sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
+
   const { downloading, handleDownload } = usePdfDownload();
 
   if (loading) {
@@ -74,7 +81,7 @@ const CustomersTab = ({ customers, consentForms, payments, loading, error, onRef
       />
 
       <CustomerTable
-        filteredCustomers={filteredCustomers}
+        filteredCustomers={sortedFilteredCustomers}
         selectedCustomer={selectedCustomer}
         setSelectedCustomer={setSelectedCustomer}
         activeTab={activeTab}

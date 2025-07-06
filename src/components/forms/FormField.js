@@ -90,8 +90,8 @@ const FormField = React.forwardRef(({
       
       case "phone":
         return (
-          <div className="flex items-center">
-            <span className="bg-gray-100 border border-black rounded-l-lg px-4 py-3 text-gray-700 font-semibold text-lg select-none">+91</span>
+          <div className="flex items-center w-full max-w-[400px]">
+            <span className="bg-gray-100 border border-black rounded-l-lg px-4 py-3 text-gray-700 font-semibold text-lg select-none w-16 text-center">+91</span>
             <input
               id={name}
               name={name}
@@ -101,7 +101,7 @@ const FormField = React.forwardRef(({
               onChange={onChange}
               pattern="\d{10}"
               maxLength={10}
-              className={`bg-white text-black border border-black border-l-0 rounded-none rounded-r-lg px-4 py-3 text-lg w-full max-w-[400px] outline-none ${inputClassName}`}
+              className={`bg-white text-black border border-black border-l-0 rounded-none rounded-r-lg px-4 py-3 text-lg flex-1 outline-none ${inputClassName}`}
               style={{ borderLeft: 'none' }}
               ref={ref}
               {...props}

@@ -9,7 +9,7 @@ import TattooConsentFormPage from "./pages/forms/TattooConsentFormPage";
 import PiercingConsentFormPage from "./pages/forms/PiercingConsentFormPage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
-import PaymentRecordFormPage from "./pages/forms/PaymentRecordFormPage";
+
 
 function AppContent() {
   const location = useLocation();
@@ -28,7 +28,7 @@ function AppContent() {
         <Route path="/piercing-consent" element={<PiercingConsentFormPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<AdminPage />} />
-        <Route path="/payment-record" element={<PaymentRecordFormPage />} />
+
       </Routes>
       {!hideFooter && <Footer />}
     </div>

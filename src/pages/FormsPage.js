@@ -5,9 +5,9 @@ import SEO from "../components/SEO/SEO";
 const FormsPage = () => (
   <>
     <SEO 
-      title="Consent Forms & Payment Records - Ink Atelier"
-      description="Complete your tattoo consent form, piercing consent form, or payment record. Required forms for all body art procedures at Ink Atelier."
-      keywords="tattoo consent form, piercing consent form, payment record, body art consent, tattoo waiver, piercing waiver, ink atelier forms"
+      title="Consent Forms - Ink Atelier"
+      description="Complete your tattoo consent form or piercing consent form. Required forms for all body art procedures at Ink Atelier."
+      keywords="tattoo consent form, piercing consent form, body art consent, tattoo waiver, piercing waiver, ink atelier forms"
               image="/assets/images/logo.jpg"
               url="https://inkatelier.in/forms"
       type="website"
@@ -18,7 +18,6 @@ const FormsPage = () => (
         <div className="flex flex-col gap-6 w-full items-center">
           <Link to="/tattoo-consent" className="bg-white text-black border border-black rounded-lg font-normal transition w-full max-w-[320px] h-10 flex items-center justify-center text-base shadow-none hover:bg-black hover:text-white">Tattoo Consent Form</Link>
           <Link to="/piercing-consent" className="bg-white text-black border border-black rounded-lg font-normal transition w-full max-w-[320px] h-10 flex items-center justify-center text-base shadow-none hover:bg-black hover:text-white">Piercing Consent Form</Link>
-          <Link to="/payment-record" className="bg-white text-black border border-black rounded-lg font-normal transition w-full max-w-[320px] h-10 flex items-center justify-center text-base shadow-none hover:bg-black hover:text-white">Payment Record Form</Link>
         </div>
       </div>
     </section>
