@@ -8,12 +8,21 @@ import LedgerTab from '../components/admin/Customer/LedgerTab';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import PageHeader from '../components/common/PageHeader';
 import SEO from '../components/SEO/SEO';
+import ConsentFormsTable from '../components/admin/Customer/ConsentFormsTable';
+import ConsentFormDetails from '../components/admin/Customer/ConsentFormDetails';
+import Pagination from '../components/common/Pagination';
+import { usePdfDownload } from '../components/admin/Customer/hooks/usePdfDownload';
+import Drawer from '../components/common/Drawer';
 
 const AdminPage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('customers');
   const navigate = useNavigate();
+  const [consentPage, setConsentPage] = useState(1);
+  const [selectedConsentForm, setSelectedConsentForm] = useState(null);
+  const ITEMS_PER_PAGE = 10;
+  const { downloading, handleDownload } = usePdfDownload();
 
   // Use custom hook for admin data
   const { customers, consentForms, payments, loading: dataLoading, error, refreshData } = useAdminData(userData, activeTab);
@@ -128,7 +137,7 @@ const AdminPage = () => {
                 >
                   Payment Record
                 </button>
-                {/* <button
+                <button
                   onClick={() => setActiveTab('ledger')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'ledger'
@@ -137,7 +146,17 @@ const AdminPage = () => {
                   }`}
                 >
                   Ledger
-                </button> */}
+                </button>
+                <button
+                  onClick={() => setActiveTab('all-consents')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'all-consents'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  All Consent Forms
+                </button>
               </nav>
             </div>
           </div>
@@ -158,9 +177,32 @@ const AdminPage = () => {
               {activeTab === 'payment-record' && (
                 <PaymentRecordTab />
               )}
-              {/* {activeTab === 'ledger' && (
+              {activeTab === 'ledger' && (
                 <LedgerTab payments={payments} />
-              )} */}
+              )}
+              {activeTab === 'all-consents' && (
+                <div className="space-y-6">
+                  {/* <h3 className="text-lg font-medium text-gray-900">All Consent Forms</h3> */}
+                  <ConsentFormsTable
+                    forms={consentForms}
+                    customers={customers}
+                    onDownload={handleDownload}
+                    downloading={downloading}
+                    onViewDetails={setSelectedConsentForm}
+                    currentPage={consentPage}
+                    onPageChange={setConsentPage}
+                    totalItems={consentForms.length}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    showCustomerPhone={true}
+                  />
+                  <Drawer
+                    open={!!selectedConsentForm}
+                    onClose={() => setSelectedConsentForm(null)}
+                  >
+                    {selectedConsentForm && <ConsentFormDetails form={selectedConsentForm} />}
+                  </Drawer>
+                </div>
+              )}
             </div>
           </div>
         </div>

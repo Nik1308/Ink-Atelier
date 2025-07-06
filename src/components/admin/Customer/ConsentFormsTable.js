@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ConsentFormsTable = ({ forms, onDownload, downloading, onViewDetails }) => {
+const ConsentFormsTable = ({ forms, customers = [], onDownload, downloading, onViewDetails, currentPage = 1, onPageChange, totalItems, itemsPerPage = 10, showCustomerPhone = false }) => {
   const getSummaryDate = (form) => {
     let summaryDate = null;
     if (form.type === 'piercing') {
@@ -18,12 +18,22 @@ const ConsentFormsTable = ({ forms, onDownload, downloading, onViewDetails }) =>
     return summaryDateDisplay;
   };
 
+  // Helper to get customer phone by customer_id
+  const getCustomerPhone = (form) => {
+    if (!form.customer_id) return '-';
+    const customer = customers.find(c => c.id === form.customer_id);
+    return customer?.phone || '-';
+  };
+
   return (
     <div>
       <table className="min-w-full table-fixed divide-y divide-gray-200 bg-white rounded-xl overflow-hidden">
         <thead className="bg-gray-50">
           <tr>
             <th className="w-1/6 px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">Type</th>
+            {showCustomerPhone && (
+              <th className="w-1/6 px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Customer Phone</th>
+            )}
             <th className="w-1/6 px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Date</th>
             <th className="w-1/6 px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Location/Type</th>
             <th className="w-1/6 px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Artist</th>
@@ -40,6 +50,11 @@ const ConsentFormsTable = ({ forms, onDownload, downloading, onViewDetails }) =>
                   {form.type === 'tattoo' ? 'Tattoo' : 'Piercing'}
                 </span>
               </td>
+              {showCustomerPhone && (
+                <td className="w-1/6 px-4 py-3 text-center">
+                  {getCustomerPhone(form)}
+                </td>
+              )}
               <td className="w-1/6 px-4 py-3 text-center">{getSummaryDate(form)}</td>
               <td className="w-1/6 px-4 py-3 text-center">
                 {form.type === 'tattoo'
