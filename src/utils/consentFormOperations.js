@@ -27,12 +27,20 @@ const handleCustomerLookup = async (customerData, setError) => {
       : null;
 
     if (existingCustomer) {
-      // Update existing customer with address if provided
+      // Update existing customer with address and heard_about_us if provided
+      const updateData = {};
       if (customerData.address) {
+        updateData.address = customerData.address;
+      }
+      if (customerData.heardAboutUs && !existingCustomer.heard_about_us) {
+        updateData.heard_about_us = customerData.heardAboutUs;
+      }
+      
+      if (Object.keys(updateData).length > 0) {
         await fetchApi(`${CUSTOMER_API_URL}/${existingCustomer.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address: customerData.address }),
+          body: JSON.stringify(updateData),
         });
       }
       return existingCustomer.id;
@@ -47,6 +55,7 @@ const handleCustomerLookup = async (customerData, setError) => {
           phone: formattedPhone,
           email: customerData.email,
           address: customerData.address,
+          heard_about_us: customerData.heardAboutUs,
         }),
       });
       return newCustomer.id;
@@ -106,6 +115,41 @@ const createHealthInfo = (form) => ({
 });
 
 /**
+ * Helper function to handle referral tracking
+ * @param {string} currentCustomerId - ID of the current customer (who was referred)
+ * @param {object} form - Form data
+ * @param {function} setError - Error callback function
+ * @returns {Promise<void>}
+ */
+const handleReferralTracking = async (currentCustomerId, form, setError) => {
+  if (form.heardAboutUs === "friend-recommendation" && form.referralPhone) {
+    try {
+      const formattedReferralPhone = formatPhoneNumber(form.referralPhone);
+      
+      // Find the referring customer
+      const customers = await fetchApi(CUSTOMER_API_URL, { method: "GET" });
+      const referringCustomer = Array.isArray(customers) 
+        ? customers.find(c => c.phone === formattedReferralPhone)
+        : null;
+
+      if (referringCustomer) {
+        // Update the current customer's record to include referred_by_customer_id
+        await fetchApi(`${CUSTOMER_API_URL}/${currentCustomerId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referred_by_customer_id: referringCustomer.id
+          }),
+        });
+      }
+    } catch (error) {
+      console.error("Referral tracking failed:", error);
+      // Don't fail the entire submission if referral tracking fails
+    }
+  }
+};
+
+/**
  * Submits the tattoo consent form, handling customer lookup/creation and image upload.
  * @param {object} form - The form data from the component state
  * @param {function} setLoading - Callback to set loading state
@@ -146,7 +190,10 @@ export async function submitTattooConsentForm(form, setLoading, setError) {
       body: JSON.stringify(payload),
     });
 
-    // Step 5: Generate PDF and send via WhatsApp
+    // Step 5: Handle referral tracking
+    await handleReferralTracking(customerId, { ...form, service_type: "tattoo" }, setError);
+
+    // Step 6: Generate PDF and send via WhatsApp
     /*
     try {
       await fetchApi(GENERATE_CONSENT_PDF_URL, {
@@ -206,7 +253,10 @@ export async function submitPiercingConsentForm(form, setLoading, setError) {
       body: JSON.stringify(payload),
     });
 
-    // Step 4: Generate PDF and send via WhatsApp
+    // Step 4: Handle referral tracking
+    await handleReferralTracking(customerId, { ...form, service_type: "piercing" }, setError);
+
+    // Step 5: Generate PDF and send via WhatsApp
     try {
       await fetchApi(GENERATE_CONSENT_PDF_URL, {
         method: "POST",

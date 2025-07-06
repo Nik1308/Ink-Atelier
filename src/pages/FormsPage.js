@@ -12,29 +12,13 @@ const FormsPage = () => (
               url="https://inkatelier.in/forms"
       type="website"
     />
-    <section className="min-h-screen bg-gradient-to-br from-[#f7f5f2] to-[#f9fafb] flex flex-col items-center justify-center py-16 px-2">
-      <div className="bg-white rounded-3xl shadow-lg border border-gray-200 max-w-lg w-full px-8 py-12 mx-auto flex flex-col items-center gap-8">
-        <h2 className="text-3xl font-sans font-semibold mb-2 text-center tracking-tight">Forms</h2>
-        <p className="text-gray-500 text-base mb-6 text-center">Fill out a consent or payment form below</p>
-        <div className="flex flex-col w-full gap-5">
-          <Link
-            to="/tattoo-consent"
-            className="w-full text-center bg-black text-white rounded-full px-6 py-4 font-semibold text-lg shadow-sm hover:bg-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black/30"
-          >
-            Tattoo Consent Form
-          </Link>
-          <Link
-            to="/piercing-consent"
-            className="w-full text-center bg-black text-white rounded-full px-6 py-4 font-semibold text-lg shadow-sm hover:bg-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black/30"
-          >
-            Piercing Consent Form
-          </Link>
-          <Link
-            to="/payment-record"
-            className="w-full text-center bg-black text-white rounded-full px-6 py-4 font-semibold text-lg shadow-sm hover:bg-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black/30"
-          >
-            Payment Record Form
-          </Link>
+    <section className="min-h-screen bg-white flex flex-col items-center justify-center py-16 px-2 relative">
+      <img src="/assets/images/logo.jpg" alt="Ink Atelier Logo" className="w-20 h-20 object-contain rounded-full absolute left-8 top-8" style={{ zIndex: 10 }} />
+      <div className="max-w-xl w-full p-8 mx-auto flex flex-col items-center bg-white justify-center" style={{ minHeight: '60vh' }}>
+        <div className="flex flex-col gap-6 w-full items-center">
+          <Link to="/tattoo-consent" className="bg-white text-black border border-black rounded-lg font-normal transition w-full max-w-[320px] h-10 flex items-center justify-center text-base shadow-none hover:bg-black hover:text-white">Tattoo Consent Form</Link>
+          <Link to="/piercing-consent" className="bg-white text-black border border-black rounded-lg font-normal transition w-full max-w-[320px] h-10 flex items-center justify-center text-base shadow-none hover:bg-black hover:text-white">Piercing Consent Form</Link>
+          <Link to="/payment-record" className="bg-white text-black border border-black rounded-lg font-normal transition w-full max-w-[320px] h-10 flex items-center justify-center text-base shadow-none hover:bg-black hover:text-white">Payment Record Form</Link>
         </div>
       </div>
     </section>
