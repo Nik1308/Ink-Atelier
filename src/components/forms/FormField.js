@@ -1,6 +1,6 @@
 import React from "react";
 
-const FormField = ({
+const FormField = React.forwardRef(({
   label,
   name,
   type = "text",
@@ -13,9 +13,13 @@ const FormField = ({
   step,
   min,
   accept,
-  ref,
+  inputClassName = "",
+  containerClassName = "",
   ...props
-}) => {
+}, ref) => {
+  const defaultInputClasses =
+    "bg-white text-black border border-black rounded-lg px-4 py-3 text-lg w-full max-w-[400px] outline-none";
+
   const renderField = () => {
     switch (type) {
       case "textarea":
@@ -27,7 +31,8 @@ const FormField = ({
             value={value}
             onChange={onChange}
             rows={rows}
-            className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2"
+            className={`${defaultInputClasses} ${inputClassName}`}
+            ref={ref}
             {...props}
           />
         );
@@ -39,7 +44,8 @@ const FormField = ({
             name={name}
             value={value}
             onChange={onChange}
-            className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2"
+            className={`${defaultInputClasses} ${inputClassName}`}
+            ref={ref}
             {...props}
           >
             <option value="">{placeholder || "Select an option"}</option>
@@ -60,7 +66,7 @@ const FormField = ({
             type="file"
             accept={accept}
             onChange={onChange}
-            className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2"
+            className={`${defaultInputClasses} ${inputClassName}`}
             {...props}
           />
         );
@@ -76,7 +82,8 @@ const FormField = ({
             placeholder={placeholder}
             value={value}
             onChange={onChange}
-            className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2"
+            className={`${defaultInputClasses} ${inputClassName}`}
+            ref={ref}
             {...props}
           />
         );
@@ -84,7 +91,7 @@ const FormField = ({
       case "phone":
         return (
           <div className="flex items-center">
-            <span className="bg-gray-200 border border-gray-400 rounded-l px-3 py-2 text-gray-700 select-none">+91</span>
+            <span className="bg-gray-100 border border-black rounded-l-lg px-4 py-3 text-gray-700 font-semibold text-lg select-none">+91</span>
             <input
               id={name}
               name={name}
@@ -94,8 +101,9 @@ const FormField = ({
               onChange={onChange}
               pattern="\d{10}"
               maxLength={10}
-              className="bg-offwhite text-black border-t border-b border-r border-gray-400 rounded-r px-3 py-2 w-full focus:outline-none"
+              className={`bg-white text-black border border-black border-l-0 rounded-none rounded-r-lg px-4 py-3 text-lg w-full max-w-[400px] outline-none ${inputClassName}`}
               style={{ borderLeft: 'none' }}
+              ref={ref}
               {...props}
             />
           </div>
@@ -110,7 +118,8 @@ const FormField = ({
             placeholder={placeholder}
             value={value}
             onChange={onChange}
-            className="bg-offwhite text-black border border-gray-400 rounded px-3 py-2"
+            className={`${defaultInputClasses} ${inputClassName}`}
+            ref={ref}
             {...props}
           />
         );
@@ -118,13 +127,13 @@ const FormField = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={`flex flex-col gap-2 ${containerClassName}`}>
       <label htmlFor={name} className="flex items-center gap-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       {renderField()}
     </div>
   );
-};
+});
 
 export default FormField; 

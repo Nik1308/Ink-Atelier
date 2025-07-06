@@ -18,7 +18,7 @@ function AppContent() {
   const hideFooter = hideHeaderRoutes.includes(location.pathname);
   
   return (
-    <div className="bg-offwhite bg-texture min-h-screen text-black">
+    <div className="min-h-screen text-black">
       {!hideHeader && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
