@@ -80,7 +80,7 @@ const PaymentRecordTab = () => {
       const customerId = await handleCustomerLookup(form.phone, setError);
 
       // Step 2: Submit payment record
-      const response = await fetchApi(PAYMENT_API_URL, {
+      await fetchApi(PAYMENT_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ const PaymentRecordTab = () => {
       setForm(initialForm);
     } catch (err) {
       setError('Failed to submit payment record. Please try again.');
-      console.error('Payment submission error:', err);
+      // console.error('Payment submission error:', err);
     } finally {
       setLoading(false);
     }

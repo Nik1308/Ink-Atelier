@@ -1,50 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { fetchCustomers, fetchConsentForms, fetchPayments } from './adminDataService';
 
-export const useAdminData = (userData, activeTab) => {
-  const [customers, setCustomers] = useState([]);
-  const [consentForms, setConsentForms] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+// Fetch all admin data in one go
+async function fetchAdminData() {
+  const [customers, consentForms, payments] = await Promise.all([
+    fetchCustomers(),
+    fetchConsentForms(),
+    fetchPayments(),
+  ]);
+  return { customers, consentForms, payments };
+}
 
-  useEffect(() => {
-    if (userData && activeTab === 'customers') {
-      loadData();
-    }
-  }, [userData, activeTab]);
+export const useAdminData = () => {
+  const {
+    data,
+    isLoading: loading,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ['adminData'],
+    queryFn: fetchAdminData,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
-  const loadData = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const [customersData, formsData, paymentsData] = await Promise.all([
-        fetchCustomers(),
-        fetchConsentForms(),
-        fetchPayments()
-      ]);
-      
-      setCustomers(customersData);
-      setConsentForms(formsData);
-      setPayments(paymentsData);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Manual refresh method
   const refreshData = () => {
-    loadData();
+    refetch();
   };
 
   return {
-    customers,
-    consentForms,
-    payments,
-    loading,
-    error,
-    refreshData
+    customers: data?.customers || [],
+    consentForms: data?.consentForms || [],
+    payments: data?.payments || [],
+    loading: loading || isFetching,
+    error: error ? error.message : null,
+    refreshData,
   };
 }; 

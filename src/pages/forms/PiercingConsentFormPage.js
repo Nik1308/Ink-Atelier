@@ -39,7 +39,6 @@ const PiercingConsentFormPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
-  const [selectedSubtype, setSelectedSubtype] = useState("");
   const navigate = useNavigate();
 
   const isValidPhone = (value) => /^\d{0,10}$/.test(value);
@@ -50,7 +49,7 @@ const PiercingConsentFormPage = () => {
   };
 
   const handlePhoneChange = (e) => {
-    let value = e.target.value.replace(/\D/g, "");
+    const value = e.target.value.replace(/\D/g, "");
     if (!isValidPhone(value)) return;
     setForm((f) => ({ ...f, phone: value }));
   };
@@ -257,7 +256,6 @@ const PiercingConsentFormPage = () => {
                   value={form.piercingType}
                   onChange={e => {
                     handleChange(e);
-                    setSelectedSubtype("");
                     setForm(f => ({ ...f, piercingSubtype: "" }));
                   }}
                   required
@@ -272,7 +270,6 @@ const PiercingConsentFormPage = () => {
                     type="select"
                     value={form.piercingSubtype}
                     onChange={e => {
-                      setSelectedSubtype(e.target.value);
                       setForm(f => ({ ...f, piercingSubtype: e.target.value }));
                     }}
                     required

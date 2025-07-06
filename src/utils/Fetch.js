@@ -48,7 +48,7 @@ export default Fetch;
  * Usage: await fetchApi(url, options)
  */
 export async function fetchApi(url, options) {
-  let fetchOptions = { ...options };
+  const fetchOptions = { ...options };
   // If body is FormData, remove Content-Type header so browser sets it
   if (fetchOptions.body instanceof FormData && fetchOptions.headers) {
     const headers = { ...fetchOptions.headers };

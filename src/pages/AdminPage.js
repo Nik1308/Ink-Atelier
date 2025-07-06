@@ -4,6 +4,7 @@ import { getUserData, clearAuthData } from '../utils/authUtils';
 import { useAdminData } from '../components/admin/Customer/hooks/useAdminData';
 import CustomersTab from '../components/admin/Customer/CustomersTab';
 import PaymentRecordTab from '../components/admin/Customer/PaymentRecordTab';
+import LedgerTab from '../components/admin/Customer/LedgerTab';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import PageHeader from '../components/common/PageHeader';
 import SEO from '../components/SEO/SEO';
@@ -127,6 +128,16 @@ const AdminPage = () => {
                 >
                   Payment Record
                 </button>
+                {/* <button
+                  onClick={() => setActiveTab('ledger')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'ledger'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Ledger
+                </button> */}
               </nav>
             </div>
           </div>
@@ -147,6 +158,9 @@ const AdminPage = () => {
               {activeTab === 'payment-record' && (
                 <PaymentRecordTab />
               )}
+              {/* {activeTab === 'ledger' && (
+                <LedgerTab payments={payments} />
+              )} */}
             </div>
           </div>
         </div>
