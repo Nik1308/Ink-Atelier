@@ -40,6 +40,7 @@ const TattooConsentFormPage = () => {
   const [tattooDesignPreview, setTattooDesignPreview] = useState(null);
   const tattooDesignInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [phoneLoading, setPhoneLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -63,8 +64,85 @@ const TattooConsentFormPage = () => {
     }
   };
 
-  // Step navigation
-  const nextStep = () => setStep((s) => Math.min(s + 1, 5));
+  // Validation functions for each step
+  const validateStep1 = () => {
+    return form.phone && form.phone.length === 10;
+  };
+
+  const validateStep2 = () => {
+    // Only check mandatory fields: name, dob (email and address are optional)
+    const baseFields = form.name && form.dob;
+    
+    // For new customers, "heard about us" is required
+    const heardAboutUs = form.isExistingCustomer || form.heardAboutUs;
+    
+    // For friend recommendation, referral phone is required
+    const referralValid = form.isExistingCustomer || 
+                         form.heardAboutUs !== 'friend-recommendation' || 
+                         (form.heardAboutUs === 'friend-recommendation' && form.referralPhone);
+    
+    return baseFields && heardAboutUs && referralValid;
+  };
+
+  const validateStep3 = () => {
+    return form.tattooDesign && form.tattooLocation && form.tattooArtist && form.tattooDate;
+  };
+
+  const validateStep4 = () => {
+    const healthFields = ['medications', 'allergies', 'medicalConditions', 'alcoholDrugs', 'pregnantNursing'];
+    return healthFields.every(field => form[field] && form[field].length > 0);
+  };
+
+  const validateStep5 = () => {
+    return form.agree;
+  };
+
+  // Step navigation with validation
+  const nextStep = () => {
+    let isValid = false;
+    let errorMessage = '';
+
+    switch (step) {
+      case 1:
+        isValid = validateStep1();
+        errorMessage = 'Please enter a valid 10-digit phone number.';
+        break;
+      case 2:
+        isValid = validateStep2();
+        if (!form.name || !form.dob) {
+          errorMessage = 'Please fill in all required fields (Name and Date of Birth).';
+        } else if (!form.isExistingCustomer && !form.heardAboutUs) {
+          errorMessage = 'Please select how you heard about us.';
+        } else if (!form.isExistingCustomer && form.heardAboutUs === 'friend-recommendation' && !form.referralPhone) {
+          errorMessage = "Please enter your friend's phone number.";
+        }
+        break;
+      case 3:
+        isValid = validateStep3();
+        errorMessage = 'Please fill in all required tattoo details.';
+        break;
+      case 4:
+        isValid = validateStep4();
+        errorMessage = 'Please answer all health questions before proceeding.';
+        break;
+      case 5:
+        isValid = validateStep5();
+        errorMessage = 'You must agree to the consent statement.';
+        break;
+      default:
+        isValid = true;
+    }
+
+    if (!isValid) {
+      setError(errorMessage);
+      return false;
+    }
+
+    setError(null);
+    setStep((s) => Math.min(s + 1, 5));
+    return true;
+  };
+
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   // Phone step logic
@@ -75,11 +153,13 @@ const TattooConsentFormPage = () => {
   };
   const handlePhoneSubmit = (e) => {
     e.preventDefault();
-    if (form.phone.length !== 10) {
+    if (!validateStep1()) {
       setError("Please enter a valid 10-digit phone number.");
       return;
     }
     setError(null);
+    setPhoneLoading(true);
+    
     fetchApi(CUSTOMER_API_URL, { method: "GET" })
       .then(customers => {
         const fullPhone = '+91' + form.phone;
@@ -107,10 +187,12 @@ const TattooConsentFormPage = () => {
             heardAboutUs: ""
           }));
         }
-        nextStep();
+        setPhoneLoading(false);
+        setStep(2); // Directly go to step 2 after successful phone validation
       })
       .catch(error => {
         setError("Error looking up customer");
+        setPhoneLoading(false);
       });
   };
 
@@ -134,28 +216,30 @@ const TattooConsentFormPage = () => {
     if (step === 1) {
       if (form.phone && form.phone.length === 10) setError(null);
     } else if (step === 2) {
-      const base = form.name && form.dob && form.email;
-      const heard = form.isExistingCustomer || form.heardAboutUs;
-      const referral = form.isExistingCustomer || form.heardAboutUs !== 'friend-recommendation' || form.referralPhone;
-      if (base && heard && referral) setError(null);
+      if (form.name && form.dob) {
+        setError(null);
+      }
     } else if (step === 3) {
-      if (form.tattooDesign && form.tattooLocation && form.tattooArtist && form.tattooDate) setError(null);
+      if (form.tattooDesign && form.tattooLocation && form.tattooArtist && form.tattooDate) {
+        setError(null);
+      }
     } else if (step === 4) {
-      const health = ['medications','allergies','medicalConditions','alcoholDrugs','pregnantNursing'].every(f => form[f] && form[f].length > 0);
-      if (health) setError(null);
+      const healthFields = ['medications', 'allergies', 'medicalConditions', 'alcoholDrugs', 'pregnantNursing'];
+      if (healthFields.every(field => form[field] && form[field].length > 0)) {
+        setError(null);
+      }
     }
   }, [step, form]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateStep5()) {
+      setError("You must agree to the consent statement.");
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
-    if (!form.agree) {
-      setError("You must agree to the consent statement.");
-      setLoading(false);
-      return;
-    }
     try {
       await submitTattooConsentForm(form, setLoading, setError);
       setSuccess("Consent submitted successfully!");
@@ -192,12 +276,6 @@ const TattooConsentFormPage = () => {
           {step === 1 && (
             <form onSubmit={e => {
               e.preventDefault();
-              // Validate phone number
-              if (!form.phone || form.phone.length !== 10) {
-                setError('Please enter a valid 10-digit phone number.');
-                return;
-              }
-              setError(null);
               handlePhoneSubmit(e);
             }} className="flex flex-col gap-8 w-full items-center">
               <div className="w-full flex flex-col items-center gap-6">
@@ -218,27 +296,19 @@ const TattooConsentFormPage = () => {
                 {error && <div className="text-red-600 text-center w-full text-sm">{error}</div>}
               </div>
               <div className="flex gap-4 w-full max-w-[400px] mt-8">
-                <button type="submit" className="bg-black text-white rounded-lg font-semibold transition w-full h-12 flex items-center justify-center text-base shadow-none hover:bg-opacity-90">Next</button>
+                <button 
+                  type="submit" 
+                  disabled={phoneLoading}
+                  className="bg-black text-white rounded-lg font-semibold transition w-full h-12 flex items-center justify-center text-base shadow-none hover:bg-opacity-90 disabled:opacity-50"
+                >
+                  {phoneLoading ? 'Checking...' : 'Next'}
+                </button>
               </div>
             </form>
           )}
           {step === 2 && (
             <form className="flex flex-col gap-6 w-full max-w-[400px] mx-auto" onSubmit={e => {
               e.preventDefault();
-              // Validate required fields for step 2
-              if (!form.name || !form.dob || !form.email) {
-                setError('Please fill in all required fields.');
-                return;
-              }
-              if (!form.isExistingCustomer && !form.heardAboutUs) {
-                setError('Please select how you heard about us.');
-                return;
-              }
-              if (!form.isExistingCustomer && form.heardAboutUs === 'friend-recommendation' && !form.referralPhone) {
-                setError("Please enter your friend's phone number.");
-                return;
-              }
-              setError(null);
               nextStep();
             }}>
               <FormField label="Full Name" name="name" type="text" value={form.name} onChange={handleChange} required placeholder="Full Name" inputClassName="w-full max-w-[400px]" />
@@ -272,11 +342,6 @@ const TattooConsentFormPage = () => {
               <div className="flex flex-col md:flex-row items-start gap-8 w-full max-w-[700px] mx-auto">
                 <form className="flex flex-col gap-6 w-full max-w-[400px]" onSubmit={e => {
                   e.preventDefault();
-                  if (!form.tattooDesign || !form.tattooLocation || !form.tattooArtist || !form.tattooDate) {
-                    setError('Please fill in all required tattoo details.');
-                    return;
-                  }
-                  setError(null);
                   nextStep();
                 }}>
                   <FormField label="Tattoo Design" name="tattooDesign" type="file" value={form.tattooDesign} onChange={handleChange} required accept="image/*" ref={tattooDesignInputRef} inputClassName="w-full max-w-[400px]" />
@@ -307,11 +372,6 @@ const TattooConsentFormPage = () => {
             ) : (
               <form className="flex flex-col gap-6 w-full max-w-[400px] mx-auto" onSubmit={e => {
                 e.preventDefault();
-                if (!form.tattooDesign || !form.tattooLocation || !form.tattooArtist || !form.tattooDate) {
-                  setError('Please fill in all required tattoo details.');
-                  return;
-                }
-                setError(null);
                 nextStep();
               }}>
                 <FormField label="Tattoo Design" name="tattooDesign" type="file" value={form.tattooDesign} onChange={handleChange} required accept="image/*" ref={tattooDesignInputRef} inputClassName="w-full max-w-[400px]" />
@@ -329,20 +389,6 @@ const TattooConsentFormPage = () => {
           {step === 4 && (
             <form className="flex flex-col gap-6 w-full max-w-[700px] mx-auto py-12" onSubmit={e => {
               e.preventDefault();
-              // Check all required health fields before proceeding
-              const requiredFields = [
-                'medications',
-                'allergies',
-                'medicalConditions',
-                'alcoholDrugs',
-                'pregnantNursing',
-              ];
-              const allAnswered = requiredFields.every(f => form[f] && form[f].length > 0);
-              if (!allAnswered) {
-                setError('Please answer all health questions before proceeding.');
-                return;
-              }
-              setError(null);
               nextStep();
             }}>
               <FormSection>
