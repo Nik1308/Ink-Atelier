@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import PageHeader from '../components/common/PageHeader';
 import SEO from '../components/SEO/SEO';
 import ConsentFormsTab from '../components/admin/Customer/ConsentFormsTab';
+import UpcomingBookingTab from '../components/admin/Customer/UpcomingBookingTab';
 
 const AdminPage = () => {
   const [userData, setUserData] = useState(null);
@@ -149,6 +150,16 @@ const AdminPage = () => {
                 >
                   All Consent Forms
                 </button>
+                <button
+                  onClick={() => setActiveTab('upcoming-booking')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'upcoming-booking'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Upcoming Booking
+                </button>
               </nav>
             </div>
           </div>
@@ -177,6 +188,9 @@ const AdminPage = () => {
                   customers={customers}
                   consentForms={consentForms}
                 />
+              )}
+              {activeTab === 'upcoming-booking' && (
+                <UpcomingBookingTab />
               )}
             </div>
           </div>
