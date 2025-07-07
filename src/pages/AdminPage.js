@@ -8,21 +8,13 @@ import LedgerTab from '../components/admin/Customer/LedgerTab';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import PageHeader from '../components/common/PageHeader';
 import SEO from '../components/SEO/SEO';
-import ConsentFormsTable from '../components/admin/Customer/ConsentFormsTable';
-import ConsentFormDetails from '../components/admin/Customer/ConsentFormDetails';
-import Pagination from '../components/common/Pagination';
-import { usePdfDownload } from '../components/admin/Customer/hooks/usePdfDownload';
-import Drawer from '../components/common/Drawer';
+import ConsentFormsTab from '../components/admin/Customer/ConsentFormsTab';
 
 const AdminPage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('customers');
   const navigate = useNavigate();
-  const [consentPage, setConsentPage] = useState(1);
-  const [selectedConsentForm, setSelectedConsentForm] = useState(null);
-  const ITEMS_PER_PAGE = 10;
-  const { downloading, handleDownload } = usePdfDownload();
 
   // Use custom hook for admin data
   const { customers, consentForms, payments, loading: dataLoading, error, refreshData } = useAdminData(userData, activeTab);
@@ -181,27 +173,10 @@ const AdminPage = () => {
                 <LedgerTab payments={payments} />
               )}
               {activeTab === 'all-consents' && (
-                <div className="space-y-6">
-                  {/* <h3 className="text-lg font-medium text-gray-900">All Consent Forms</h3> */}
-                  <ConsentFormsTable
-                    forms={consentForms}
-                    customers={customers}
-                    onDownload={handleDownload}
-                    downloading={downloading}
-                    onViewDetails={setSelectedConsentForm}
-                    currentPage={consentPage}
-                    onPageChange={setConsentPage}
-                    totalItems={consentForms.length}
-                    itemsPerPage={ITEMS_PER_PAGE}
-                    showCustomerPhone={true}
-                  />
-                  <Drawer
-                    open={!!selectedConsentForm}
-                    onClose={() => setSelectedConsentForm(null)}
-                  >
-                    {selectedConsentForm && <ConsentFormDetails form={selectedConsentForm} />}
-                  </Drawer>
-                </div>
+                <ConsentFormsTab
+                  customers={customers}
+                  consentForms={consentForms}
+                />
               )}
             </div>
           </div>
