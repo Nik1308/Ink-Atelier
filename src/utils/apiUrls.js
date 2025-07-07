@@ -11,6 +11,10 @@ export const CUSTOMER_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/
 export const PIERCING_CONSENT_FORM_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/piercing_consent_form";
 
 export const PAYMENT_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/payment";
+
+export const ADVANCE_PAYMENT_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/advance_payment";
+
+export const EXPENSE_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/expense";
  
 // Backend PDF and WhatsApp service URLs
 export const BACKEND_BASE_URL = "http://localhost:5001";
