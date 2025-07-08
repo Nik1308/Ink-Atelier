@@ -35,4 +35,18 @@ export async function handleCustomerLookup(phone, name = '') {
   } catch (error) {
     throw new Error('Customer lookup/creation failed: ' + error.message);
   }
+}
+
+export function getCustomerById(customers, id) {
+  return customers?.find((c) => c.id === id) || {};
+}
+
+export function getCustomerName(customers, id) {
+  const customer = getCustomerById(customers, id);
+  return customer.name || 'Unknown';
+}
+
+export function getCustomerPhone(customers, id) {
+  const customer = getCustomerById(customers, id);
+  return customer.phone || 'N/A';
 } 
