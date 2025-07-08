@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchApi } from '../../../utils/Fetch';
-import { PAYMENT_API_URL, ADVANCE_PAYMENT_API_URL, CUSTOMER_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL } from '../../../utils/apiUrls';
+import { PAYMENT_API_URL, ADVANCE_PAYMENT_API_URL, CUSTOMER_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL, EXPENSE_API_URL } from '../../../utils/apiUrls';
 
 function mergeConsentForms(tattooForms, piercingForms) {
   const allForms = [
@@ -51,6 +51,13 @@ export function useAdminResources() {
     refetchInterval: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
+  const expenses = useQuery({
+    queryKey: ['expenses'],
+    queryFn: () => fetchApi(EXPENSE_API_URL, { method: 'GET' }),
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 
   // Combine and normalize consent forms with type
   const consentForms = mergeConsentForms(tattooConsents.data, piercingConsents.data);
@@ -62,5 +69,6 @@ export function useAdminResources() {
     tattooConsents,
     piercingConsents,
     consentForms,
+    expenses,
   };
 } 
