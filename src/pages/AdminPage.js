@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserData, clearAuthData } from '../utils/authUtils';
-import { useAdminData } from '../components/admin/Customer/hooks/useAdminData';
-import CustomersTab from '../components/admin/Customer/CustomersTab';
-import PaymentRecordTab from '../components/admin/Customer/PaymentRecordTab';
-import LedgerTab from '../components/admin/Customer/LedgerTab';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import PageHeader from '../components/common/PageHeader';
-import SEO from '../components/SEO/SEO';
-import ConsentFormsTab from '../components/admin/Customer/ConsentFormsTab';
-import UpcomingBookingTab from '../components/admin/Customer/UpcomingBookingTab';
+import { CustomersTab, PaymentRecordTab, LedgerTab, ConsentFormsTab, UpcomingBookingTab, MessagesTab } from '../features/admin';
+import { useAdminResources } from '../features/admin/hooks';
+import { LoadingSpinner, PageHeader, SEO } from '../features/common/ui';
 
 const AdminPage = () => {
   const [userData, setUserData] = useState(null);
@@ -17,8 +11,14 @@ const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('customers');
   const navigate = useNavigate();
 
-  // Use custom hook for admin data
-  const { customers, consentForms, payments, loading: dataLoading, error, refreshData } = useAdminData(userData, activeTab);
+  const {
+    customers,
+    payments,
+    advancePayments,
+    tattooConsents,
+    piercingConsents,
+    consentForms,
+  } = useAdminResources();
 
   useEffect(() => {
     const userData = getUserData();
@@ -160,6 +160,16 @@ const AdminPage = () => {
                 >
                   Upcoming Booking
                 </button>
+                {/* <button
+                  onClick={() => setActiveTab('messages')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'messages'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Messages
+                </button> */}
               </nav>
             </div>
           </div>
@@ -169,29 +179,45 @@ const AdminPage = () => {
             <div className="bg-white shadow rounded-lg p-6">
               {activeTab === 'customers' && (
                 <CustomersTab 
-                  customers={customers} 
+                  customers={customers.data || []}
                   consentForms={consentForms}
-                  payments={payments}
-                  loading={dataLoading}
-                  error={error}
-                  onRefresh={refreshData}
+                  payments={payments.data || []}
+                  loading={customers.isLoading || payments.isLoading || tattooConsents.isLoading || piercingConsents.isLoading}
+                  error={customers.error?.message || payments.error?.message || tattooConsents.error?.message || piercingConsents.error?.message}
+                  onRefresh={() => {
+                    customers.refetch();
+                    payments.refetch();
+                    tattooConsents.refetch();
+                    piercingConsents.refetch();
+                  }}
                 />
               )}
               {activeTab === 'payment-record' && (
-                <PaymentRecordTab />
+                <PaymentRecordTab customers={customers.data || []} />
               )}
               {activeTab === 'ledger' && (
-                <LedgerTab payments={payments} />
+                <LedgerTab payments={payments.data || []} />
               )}
               {activeTab === 'all-consents' && (
                 <ConsentFormsTab
-                  customers={customers}
-                  consentForms={consentForms}
+                  customers={customers.data || []}
+                  forms={consentForms}
+                  key="all-consents-tab"
                 />
               )}
               {activeTab === 'upcoming-booking' && (
-                <UpcomingBookingTab />
+                <UpcomingBookingTab
+                  bookings={advancePayments.data || []}
+                  customers={customers.data || []}
+                />
               )}
+              {/* {activeTab === 'messages' && (
+                <MessagesTab
+                  payments={payments.data || []}
+                  advancePayments={advancePayments.data || []}
+                  customers={customers.data || []}
+                />
+              )} */}
             </div>
           </div>
         </div>

@@ -1,14 +1,14 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import Header from "./components/Header/Header";
-import Footer from "./components/Footer/Footer";
-import HomePage from "./pages/HomePage";
-import CategoryPage from "./pages/CategoryPage";
-import FormsPage from "./pages/FormsPage";
-import TattooConsentFormPage from "./pages/forms/TattooConsentFormPage";
-import PiercingConsentFormPage from "./pages/forms/PiercingConsentFormPage";
+import Header from './features/common/ui/Header/Header';
+import Footer from './features/common/ui/Footer/Footer';
+import HomePage from './features/home/HomePage';
+import CategoryPage from './features/home/CategoryPage';
+import FormsPage from './pages/FormsPage';
+import { TattooConsentFormPage, PiercingConsentFormPage } from './features/forms/pages';
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
+import CsvUploadPage from "./pages/CsvUploadPage";
 // import PaymentRecordFormPage from "./pages/forms/PaymentRecordFormPage";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -16,7 +16,7 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const location = useLocation();
-  const hideHeaderRoutes = ["/forms", "/tattoo-consent", "/piercing-consent", "/login", "/admin"];
+  const hideHeaderRoutes = ["/forms", "/tattoo-consent", "/piercing-consent", "/login", "/admin", "/csv-upload"];
   const hideHeader = hideHeaderRoutes.includes(location.pathname);
   const hideFooter = hideHeaderRoutes.includes(location.pathname);
   
@@ -31,6 +31,7 @@ function AppContent() {
         <Route path="/piercing-consent" element={<PiercingConsentFormPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/csv-upload" element={<CsvUploadPage />} />
         {/* <Route path="/payment-record" element={<PaymentRecordFormPage />} /> */}
       </Routes>
       {!hideFooter && <Footer />}

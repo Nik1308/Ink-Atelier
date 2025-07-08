@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../utils/Fetch';
 import { storeAuthToken, getUserData } from '../utils/authUtils';
 import { LOGIN_API_URL } from '../utils/apiUrls';
-import SEO from '../components/SEO/SEO';
+import { SEO } from '../features/common/ui';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
