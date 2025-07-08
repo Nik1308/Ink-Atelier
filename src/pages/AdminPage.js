@@ -18,6 +18,7 @@ const AdminPage = () => {
     tattooConsents,
     piercingConsents,
     consentForms,
+    expenses,
   } = useAdminResources();
 
   useEffect(() => {
@@ -196,7 +197,7 @@ const AdminPage = () => {
                 <PaymentRecordTab customers={customers.data || []} />
               )}
               {activeTab === 'ledger' && (
-                <LedgerTab payments={payments.data || []} />
+                <LedgerTab payments={payments.data || []} expenses={expenses?.data || []} customers={customers.data || []} />
               )}
               {activeTab === 'all-consents' && (
                 <ConsentFormsTab
