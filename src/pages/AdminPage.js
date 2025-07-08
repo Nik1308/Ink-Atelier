@@ -161,7 +161,7 @@ const AdminPage = () => {
                 >
                   Upcoming Booking
                 </button>
-                {/* <button
+                <button
                   onClick={() => setActiveTab('messages')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'messages'
@@ -170,7 +170,7 @@ const AdminPage = () => {
                   }`}
                 >
                   Messages
-                </button> */}
+                </button>
               </nav>
             </div>
           </div>
@@ -212,13 +212,13 @@ const AdminPage = () => {
                   customers={customers.data || []}
                 />
               )}
-              {/* {activeTab === 'messages' && (
+              {activeTab === 'messages' && (
                 <MessagesTab
                   payments={payments.data || []}
                   advancePayments={advancePayments.data || []}
                   customers={customers.data || []}
                 />
-              )} */}
+              )}
             </div>
           </div>
         </div>
