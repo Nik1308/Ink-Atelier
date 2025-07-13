@@ -15,7 +15,8 @@
     "react-scripts": "5.0.1",
     "recharts": "^3.0.2",
     "swiper": "^11.2.10",
-    "web-vitals": "^4.2.4"
+    "web-vitals": "^4.2.4",
+    "workbox-core": "^7.3.0"
   },
   "scripts": {
     "start": "react-scripts start",
