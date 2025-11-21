@@ -13,4 +13,50 @@
   pointer-events: auto;
   gap: 0.5rem; /* Optional: space between dots */
   background: none;
+}
+
+/* Dark theme overrides for react-date-range calendar in glass dashboard */
+.rdrCalendarWrapper,
+.rdrMonth,
+.rdrWeekDays,
+.rdrDays,
+.rdrDay,
+.rdrDefinedRangesWrapper,
+.rdrStaticRangeLabel,
+.rdrDateDisplayWrapper,
+.rdrDateDisplay {
+  background-color: #131722 !important;
+  color: #fff !important;
+}
+.rdrDayPassive, .rdrDayDisabled, .rdrDayDisabled .rdrDayNumber span {
+  color: #b6cdfd !important;
+  opacity: 0.92 !important;
+  background: transparent !important;
+}
+.rdrDayToday .rdrDayNumber span {
+  color: #38bdf8 !important; /* highlight today with cyan */
+}
+.rdrDaySelected, .rdrDayInRange, .rdrStartEdge, .rdrEndEdge {
+  background: #0ea5e9 !important; /* blue highlight for selected/range */
+  color: #fff !important;
+}
+.rdrDateDisplayItem input, .rdrDateDisplayItem input:focus {
+  background: #171923 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.rdrMonthAndYearPickers select {
+  background: #171923 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.rdrInputRanges, .rdrInputRange {
+  color: #fff !important;
+}
+.rdrCalendarWrapper .rdrNextPrevButton span {
+  filter: brightness(2);
+}
+/* Extra: increase calendar box shadow for glass effect */
+.rdrCalendarWrapper {
+  box-shadow: 0 4px 48px #0007, 0 0 0 1px #1e293b3d !important;
 } 

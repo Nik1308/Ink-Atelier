@@ -100,6 +100,7 @@ const AdvancePaymentForm = () => {
         required
         placeholder="Customer name"
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Customer Phone Number"
@@ -110,6 +111,7 @@ const AdvancePaymentForm = () => {
         required
         placeholder="10-digit mobile number"
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <div className="flex gap-4">
         <FormField
@@ -120,6 +122,7 @@ const AdvancePaymentForm = () => {
           onChange={handleAdvanceChange}
           required
           inputClassName="w-full"
+          labelClassName="text-white font-semibold"
         />
         <FormField
           label="Payment Date"
@@ -129,6 +132,7 @@ const AdvancePaymentForm = () => {
           onChange={handleAdvanceChange}
           required
           inputClassName="w-full"
+          labelClassName="text-white font-semibold"
         />
       </div>
       <div className="flex gap-4">
@@ -142,6 +146,7 @@ const AdvancePaymentForm = () => {
           min="1"
           placeholder="Enter advance amount"
           inputClassName="w-full"
+          labelClassName="text-white font-semibold"
         />
         <FormField
           label="Due Amount (₹)"
@@ -153,6 +158,7 @@ const AdvancePaymentForm = () => {
           min="1"
           placeholder="Enter due amount"
           inputClassName="w-full"
+          labelClassName="text-white font-semibold"
         />
       </div>
       <FormField
@@ -167,6 +173,7 @@ const AdvancePaymentForm = () => {
           { value: 'piercing', label: 'Piercing' },
         ]}
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       {advanceError && (
         <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md w-full max-w-[400px]">{advanceError}</div>
@@ -178,7 +185,7 @@ const AdvancePaymentForm = () => {
         <button
           type="submit"
           disabled={advanceLoading}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          className="w-full py-3 mt-2 rounded-xl shadow-lg text-lg font-bold bg-white text-black border border-white/60 hover:bg-gray-100 focus:outline-none disabled:opacity-50 transition"
         >
           {advanceLoading ? 'Submitting...' : 'Submit Advance Payment'}
         </button>

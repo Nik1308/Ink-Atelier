@@ -77,6 +77,7 @@ const ExpenseForm = () => {
         onChange={handleExpenseChange}
         required
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Amount (₹)"
@@ -88,6 +89,7 @@ const ExpenseForm = () => {
         min="1"
         placeholder="Enter amount"
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Purpose"
@@ -98,6 +100,7 @@ const ExpenseForm = () => {
         required
         placeholder="Purpose of expense"
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Payment Method"
@@ -112,6 +115,7 @@ const ExpenseForm = () => {
           { value: 'Card', label: 'Card' },
         ]}
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       {expenseError && (
         <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md w-full max-w-[400px]">{expenseError}</div>
@@ -123,7 +127,7 @@ const ExpenseForm = () => {
         <button
           type="submit"
           disabled={expenseLoading}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          className="w-full py-3 mt-2 rounded-xl shadow-lg text-lg font-bold bg-white text-black border border-white/60 hover:bg-gray-100 focus:outline-none disabled:opacity-50 transition"
         >
           {expenseLoading ? 'Submitting...' : 'Submit Expense'}
         </button>

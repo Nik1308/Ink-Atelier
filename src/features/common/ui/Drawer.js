@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-const Drawer = ({ open, isOpen, onClose, children, maxWidth = 'max-w-lg' }) => {
+const Drawer = ({ open, isOpen, onClose, children, maxWidth = 'max-w-lg', side = 'right' }) => {
   // Support both 'open' and 'isOpen' props for compatibility
   const visible = typeof open !== 'undefined' ? open : isOpen;
 
@@ -25,7 +25,12 @@ const Drawer = ({ open, isOpen, onClose, children, maxWidth = 'max-w-lg' }) => {
     };
   }, [visible]);
 
-  // Always render for animation, but visually hidden when closed
+  // Determine panel side classes
+  const panelSideClasses =
+    side === 'left'
+      ? `fixed left-0 top-0 h-full w-full ${maxWidth} bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${visible ? 'translate-x-0' : '-translate-x-full'} pointer-events-auto`
+      : `fixed right-0 top-0 h-full w-full ${maxWidth} bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${visible ? 'translate-x-0' : 'translate-x-full'} pointer-events-auto`;
+
   return (
     <div className={`fixed inset-0 z-[9999] flex pointer-events-none`}>
       {/* Overlay */}
@@ -34,10 +39,9 @@ const Drawer = ({ open, isOpen, onClose, children, maxWidth = 'max-w-lg' }) => {
         onClick={visible ? onClose : undefined}
         aria-label="Close drawer overlay"
       />
-      {/* Drawer panel (right side) */}
+      {/* Drawer panel (now supports left/right) */}
       <div
-        className={`fixed right-0 top-0 h-full w-full ${maxWidth} bg-white shadow-xl transform transition-transform duration-300 ease-in-out
-          ${visible ? 'translate-x-0' : 'translate-x-full'} pointer-events-auto`}
+        className={panelSideClasses}
         style={{ willChange: 'transform', zIndex: 10000 }}
       >
         <button
