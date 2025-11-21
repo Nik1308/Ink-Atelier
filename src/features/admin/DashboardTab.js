@@ -25,6 +25,27 @@ function RevenueTooltip({ active, payload, label }) {
   );
 }
 
+function getPaginationWindow(current, total) {
+  const window = [];
+  if (total <= 7) {
+    for (let i = 1; i <= total; ++i) window.push(i);
+    return window;
+  }
+  let left = Math.max(2, current - 2);
+  let right = Math.min(total - 1, current + 2);
+  if (current <= 4) {
+    left = 2; right = 5;
+  } else if (current >= total - 3) {
+    left = total - 4; right = total - 1;
+  }
+  window.push(1);
+  if (left > 2) window.push('...');
+  for (let i = left; i <= right; ++i) window.push(i);
+  if (right < total - 1) window.push('...');
+  window.push(total);
+  return window;
+}
+
 const startMonth = startOfDay(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 const endToday = endOfDay(new Date());
 const NTH_DAY = 2;
@@ -34,6 +55,12 @@ const DashboardTab = () => {
     { startDate: startOfDay(new Date()), endDate: endOfDay(new Date()), key: 'selection' }
   ]);
   const [typeExpanded, setTypeExpanded] = useState(false);
+  const [showPaymentsTable, setShowPaymentsTable] = useState(false);
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const rowsPerPage = 10;
+  const [paymentCardExpanded, setPaymentCardExpanded] = useState(false);
+  const [expenseCardExpanded, setExpenseCardExpanded] = useState(false);
+  const [expensesPage, setExpensesPage] = useState(1);
 
   const { payments: paymentsQuery, expenses: expensesQuery } = useAdminResources();
   const { startDate, endDate } = dateRange[0];
@@ -188,6 +215,25 @@ const DashboardTab = () => {
   const others = revenueByTypeList.slice(2);
   const topTotal = topTypes.reduce((sum, t) => sum + t.value, 0);
 
+  const allCustomers = (useAdminResources().customers?.data || []);
+  const paymentRecords = (paymentsQuery?.data || []).filter(p => {
+    if (!p.payment_date) return false;
+    const d = new Date(p.payment_date);
+    return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startOfDay(startDate)) || isSameDay(d, endOfDay(endDate));
+  }).sort((a,b) => new Date(b.payment_date) - new Date(a.payment_date));
+  const paginatedPayments = paymentRecords.slice((paymentsPage-1) * rowsPerPage, paymentsPage * rowsPerPage);
+  const totalPaymentsPages = Math.ceil(paymentRecords.length / rowsPerPage) || 1;
+  const paymentPagesWindow = getPaginationWindow(paymentsPage, totalPaymentsPages);
+
+  const expensesRecords = (expensesQuery?.data || []).filter(e => {
+    if (!e.expense_date) return false;
+    const d = new Date(e.expense_date);
+    return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startOfDay(startDate)) || isSameDay(d, endOfDay(endDate));
+  }).sort((a,b) => new Date(b.expense_date) - new Date(a.expense_date));
+  const paginatedExpenses = expensesRecords.slice((expensesPage-1) * rowsPerPage, expensesPage * rowsPerPage);
+  const totalExpensesPages = Math.ceil(expensesRecords.length / rowsPerPage) || 1;
+  const expensesPagesWindow = getPaginationWindow(expensesPage, totalExpensesPages);
+
   return (
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -262,7 +308,7 @@ const DashboardTab = () => {
         </GlassCard>
       </div>
       {/* Tattoo Revenue Graph: day-wise or month-wise */}
-      <GlassCard className="h-[355px] bg-white/10 border-white/20 mb-10 flex flex-col">
+      {/* <GlassCard className="h-[355px] bg-white/10 border-white/20 mb-10 flex flex-col">
         <div className="text-base font-medium text-white/80 mb-2">Tattoo Revenue: {isMonthly ? "Months" : "Days"} — Current vs Previous</div>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={tattooGraphData} margin={{left:8, right:24, top:16, bottom:2}}>
@@ -275,9 +321,9 @@ const DashboardTab = () => {
             <Line type="monotone" dataKey="previous" name={isMonthly ? 'Tattoo (Prev Range)' : 'Tattoo (Prev Days)'} stroke="#0284c7" strokeDasharray="5 6" strokeWidth={2} dot={false}/>
           </LineChart>
         </ResponsiveContainer>
-      </GlassCard>
+      </GlassCard> */}
       {/* Piercing Revenue Graph: day-wise or month-wise */}
-      <GlassCard className="h-[355px] bg-white/10 border-white/20 mb-14 flex flex-col">
+      {/* <GlassCard className="h-[355px] bg-white/10 border-white/20 mb-14 flex flex-col">
         <div className="text-base font-medium text-white/80 mb-2">Piercing Revenue: {isMonthly ? "Months" : "Days"} — Current vs Previous</div>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={piercingGraphData} margin={{left:8, right:24, top:16, bottom:2}}>
@@ -290,6 +336,149 @@ const DashboardTab = () => {
             <Line type="monotone" dataKey="previous" name={isMonthly ? 'Piercing (Prev Range)' : 'Piercing (Prev Days)'} stroke="#a16207" strokeDasharray="5 6" strokeWidth={2} dot={false}/>
           </LineChart>
         </ResponsiveContainer>
+      </GlassCard> */}
+      <GlassCard
+        className={`transition-all duration-300 w-full mx-auto mt-1 mb-12 px-6 flex flex-col cursor-pointer ${paymentCardExpanded ? 'shadow-2xl scale-[1.01]' : 'shadow'}`}
+        style={{minHeight: paymentCardExpanded ? 470 : 77, maxWidth: '1160px', overflow: 'visible'}}
+        onClick={() => setPaymentCardExpanded(exp => !exp)}
+      >
+        <div className="flex items-center justify-between w-full pb-1 pt-2 select-none">
+          <div className="text-lg font-semibold text-white/90 ml-1">Payment Records</div>
+          <button
+            onClick={e => {e.stopPropagation(); setPaymentCardExpanded(exp => !exp);}}
+            className="text-2xl ml-1 rounded-full text-white/70 hover:text-sky-400 bg-black/40 hover:bg-black/60 transition p-1 flex items-center justify-center"
+            aria-label={paymentCardExpanded ? "Collapse" : "Expand"}
+          >{paymentCardExpanded ? <FiChevronUp/> : <FiChevronDown/>}</button>
+        </div>
+        {paymentCardExpanded && (
+          <div className="transition-all duration-200 pt-4">
+            <div className="w-full overflow-x-auto pb-2">
+              <table className="w-full min-w-[900px] glass-table rounded-2xl overflow-hidden border-collapse">
+                <thead className="bg-white/10 sticky top-0 z-10">
+                  <tr className="text-white/80 text-base font-bold">
+                    <th className="px-4 py-3 text-left">Name</th>
+                    <th className="px-4 py-3 text-left">Phone</th>
+                    <th className="px-4 py-3 text-center">Payment Date</th>
+                    <th className="px-4 py-3 text-center">Amount</th>
+                    <th className="px-4 py-3 text-center">Service</th>
+                    <th className="px-4 py-3 text-center">Type</th>
+                    <th className="px-4 py-3 text-center">GST</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedPayments.length === 0 ? (
+                    <tr><td colSpan={7} className="px-4 py-8 text-white/60 text-center">No payment records found.</td></tr>
+                  ) : paginatedPayments.map((p, idx) => {
+                    const customer = allCustomers.find(c => c.id === p.customer_id) || {};
+                    return (
+                      <tr key={p.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
+                        <td className="px-4 py-3 text-left font-bold text-white">{customer.name || 'Unknown'}</td>
+                        <td className="px-4 py-3 text-left font-mono text-sky-200">{(customer.phone || '').replace(/^\+91/, '')}</td>
+                        <td className="px-4 py-3 text-center text-white/90">{p.payment_date ? new Date(p.payment_date).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
+                        <td className="px-4 py-3 text-center font-semibold">₹{parseFloat(p.amount||0).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-center">{p.service || '-'}</td>
+                        <td className="px-4 py-3 text-center">{p.payment_type || '-'}</td>
+                        <td className="px-4 py-3 text-center">{p.gst !== undefined ? `₹${parseFloat(p.gst).toLocaleString()}` : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {totalPaymentsPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6 mb-2">
+                  <button
+                    onClick={e => { e.stopPropagation(); setPaymentsPage(p => Math.max(1, p-1)); }}
+                    disabled={paymentsPage===1}
+                    className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${paymentsPage === 1 ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                    style={{minWidth:44}}
+                  >Prev</button>
+                  {paymentPagesWindow.map((num, idx) => num === '...'
+                    ? <span key={`dots${idx}`} className="mx-1 text-gray-300 text-lg px-1 font-bold">…</span>
+                    : <button
+                        key={num}
+                        onClick={e => { e.stopPropagation(); setPaymentsPage(num); }}
+                        className={`mx-[2px] px-4 py-2 rounded-2xl border-none font-bold text-base transition shadow backdrop-blur ${paymentsPage===num ? 'bg-sky-500 text-white' : 'bg-white/12 text-white/70 hover:bg-sky-400 hover:text-white'}`}
+                        style={{minWidth:44}}
+                      >{num}</button>
+                  )}
+                  <button
+                    onClick={e => { e.stopPropagation(); setPaymentsPage(p => Math.min(totalPaymentsPages, p+1)); }}
+                    disabled={paymentsPage===totalPaymentsPages}
+                    className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${paymentsPage === totalPaymentsPages ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                    style={{minWidth:44}}
+                  >Next</button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </GlassCard>
+      <GlassCard
+        className={`transition-all duration-300 w-full mx-auto mt-1 mb-12 px-6 flex flex-col cursor-pointer ${expenseCardExpanded ? 'shadow-2xl scale-[1.01]' : 'shadow'}`}
+        style={{minHeight: expenseCardExpanded ? 470 : 77, maxWidth: '1160px', overflow: 'visible'}}
+        onClick={() => setExpenseCardExpanded(exp => !exp)}
+      >
+        <div className="flex items-center justify-between w-full pb-1 pt-2 select-none">
+          <div className="text-lg font-semibold text-white/90 ml-1">Expense Records</div>
+          <button
+            onClick={e => {e.stopPropagation(); setExpenseCardExpanded(exp => !exp);}}
+            className="text-2xl ml-1 rounded-full text-white/70 hover:text-sky-400 bg-black/40 hover:bg-black/60 transition p-1 flex items-center justify-center"
+            aria-label={expenseCardExpanded ? "Collapse" : "Expand"}
+          >{expenseCardExpanded ? <FiChevronUp/> : <FiChevronDown/>}</button>
+        </div>
+        {expenseCardExpanded && (
+          <div className="transition-all duration-200 pt-4">
+            <div className="w-full overflow-x-auto pb-2">
+              <table className="w-full min-w-[650px] glass-table rounded-2xl overflow-hidden border-collapse">
+                <thead className="bg-white/10 sticky top-0 z-10">
+                  <tr className="text-white/80 text-base font-bold">
+                    <th className="px-4 py-3 text-center">Expense Date</th>
+                    <th className="px-4 py-3 text-center">Amount</th>
+                    <th className="px-4 py-3 text-center">Purpose</th>
+                    <th className="px-4 py-3 text-center">Payment Method</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedExpenses.length === 0 ? (
+                    <tr><td colSpan={4} className="px-4 py-8 text-white/60 text-center">No expense records found.</td></tr>
+                  ) : paginatedExpenses.map((e, idx) => (
+                    <tr key={e.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
+                      <td className="px-4 py-3 text-center text-white/90">{e.expense_date ? new Date(e.expense_date).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
+                      <td className="px-4 py-3 text-center font-semibold">₹{parseFloat(e.amount||0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-center">{e.purpose || '-'}</td>
+                      <td className="px-4 py-3 text-center">{e.payment_method || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {totalExpensesPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6 mb-2">
+                  <button
+                    onClick={e => { e.stopPropagation(); setExpensesPage(p => Math.max(1, p-1)); }}
+                    disabled={expensesPage===1}
+                    className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${expensesPage === 1 ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                    style={{minWidth:44}}
+                  >Prev</button>
+                  {expensesPagesWindow.map((num, idx) => num === '...'
+                    ? <span key={`dots${idx}`} className="mx-1 text-gray-300 text-lg px-1 font-bold">…</span>
+                    : <button
+                        key={num}
+                        onClick={e => { e.stopPropagation(); setExpensesPage(num); }}
+                        className={`mx-[2px] px-4 py-2 rounded-2xl border-none font-bold text-base transition shadow backdrop-blur ${expensesPage===num ? 'bg-sky-500 text-white' : 'bg-white/12 text-white/70 hover:bg-sky-400 hover:text-white'}`}
+                        style={{minWidth:44}}
+                      >{num}</button>
+                  )}
+                  <button
+                    onClick={e => { e.stopPropagation(); setExpensesPage(p => Math.min(totalExpensesPages, p+1)); }}
+                    disabled={expensesPage===totalExpensesPages}
+                    className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${expensesPage === totalExpensesPages ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                    style={{minWidth:44}}
+                  >Next</button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </GlassCard>
     </>
   );
