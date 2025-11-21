@@ -216,6 +216,7 @@ const DateRangeSelector = ({ dateRange, setDateRange, months = 2, direction = 'h
             locale={enIN}
             className="bg-transparent text-white border-0"
             rangeColors={["#38bdf8", "#22d3ee", "#818cf8"]}
+            maxDate={new Date()}
           />
           <div className="flex justify-end mt-4 gap-3">
             <button className="px-4 py-2 rounded border border-white/10 bg-black/30 text-white hover:bg-black/70 transition" onClick={() => setPickerOpen(false)}>Cancel</button>

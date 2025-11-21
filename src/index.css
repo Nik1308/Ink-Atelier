@@ -60,3 +60,43 @@
 .rdrCalendarWrapper {
   box-shadow: 0 4px 48px #0007, 0 0 0 1px #1e293b3d !important;
 } 
+
+/* Date picker static range enhancements */
+.rdrStaticRange:hover, .rdrStaticRange:focus {
+  background: rgba(255,255,255,0.1)!important;
+  color: #fff!important;
+  font-weight: bold!important;
+}
+.rdrStaticRange.rdrStaticRangeSelected {
+  background: rgba(255,255,255,0.3)!important;
+  color: #fff!important;
+  font-weight: bold!important;
+  border-radius: 12px!important;
+}
+
+/* Calendar dates: white by default */
+.rdrDayNumber span {
+  color: #fff!important;
+  font-weight: 500;
+}
+/* Today: keep blue for theme accent */
+.rdrDayToday .rdrDayNumber span {
+  color: #fff!important; /* blue accent for today only */
+  font-weight: bold!important;
+}
+/* Disabled/future days: faded glassy */
+.rdrDayDisabled, .rdrDayDisabled .rdrDayNumber span {
+  color: #cbd5e1!important; /* light slate, softer */
+  opacity: 0.4!important;
+  background: transparent!important;
+  pointer-events: none!important;
+} 
+
+/* Always white number on selected day, even if today (fix blue on blue) */
+.rdrDaySelected .rdrDayNumber span, 
+.rdrDayInRange .rdrDayNumber span, 
+.rdrStartEdge .rdrDayNumber span, 
+.rdrEndEdge .rdrDayNumber span {
+  color: #fff!important;
+  font-weight: bold!important;
+} 
