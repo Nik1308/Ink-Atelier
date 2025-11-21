@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useAdminResources } from './hooks/useAdminResources';
 import GlassCard from './components/GlassCard';
 import DateRangeSelector from '../common/ui/DateRangeSelector';
-import { PAYMENT_API_URL } from '../../utils/apiUrls';
+import { PAYMENT_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL } from '../../utils/apiUrls';
 import { fetchApi } from '../../utils/Fetch';
 import { getCustomerById, handleCustomerLookup } from '../../utils/customerUtils';
 import FormField from '../forms/components/FormField';
@@ -69,6 +69,7 @@ const ConsentFormsTab = () => {
   const [expandedFormId, setExpandedFormId] = useState(null);
   const [columns, setColumns] = useState(getColumns());
   const [modalForm, setModalForm] = useState({ open: false, form: null, error: null, loading: false, success: null });
+  const [patchedIds, setPatchedIds] = useState({}); // { [form.id]: true } to reactively disable after PATCH if not in the original data
 
   React.useEffect(() => {
     function handleResize() { setColumns(getColumns()); }
@@ -138,7 +139,8 @@ const ConsentFormsTab = () => {
       error: null,
       loading: false,
       success: null,
-      c_id: customer?.id || form.customer_id
+      c_id: customer?.id || form.customer_id,
+      targetForm: form,
     });
   };
   const closePaymentModal = () => setModalForm({ open: false, form: null, error: null, loading: false, success: null });
@@ -178,6 +180,21 @@ const ConsentFormsTab = () => {
           service: service,
         })
       });
+      // PATCH consent form for payment = true
+      if (modalForm.targetForm) {
+        const form = modalForm.targetForm;
+        let patchUrl = '';
+        if (form.type === 'tattoo') patchUrl = `${TATTOO_CONSENT_FORM_API_URL}/${form.id}`;
+        else if (form.type === 'piercing') patchUrl = `${PIERCING_CONSENT_FORM_API_URL}/${form.id}`;
+        if (patchUrl) {
+          await fetchApi(patchUrl, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payment: true })
+          });
+        }
+        setPatchedIds((ids) => ({...ids, [form.id]: true}));
+      }
       setModalForm(mf => ({ ...mf, loading: false, error: null, success: 'Payment recorded successfully!' }));
     } catch (err) {
       setModalForm(mf => ({ ...mf, loading: false, error: 'Failed to record payment. Try again.' }));
@@ -252,7 +269,14 @@ const ConsentFormsTab = () => {
                   <td className="px-2 py-3 whitespace-nowrap text-base text-white/80">{isTattoo ? (form.tattoo_date ? formatDate(form.tattoo_date) : form.created_at ? formatDate(form.created_at) : '—') : (form.piercing_date ? formatDate(form.piercing_date) : form.created_at ? formatDate(form.created_at) : '—')}</td>
                   <td className="px-2 py-3 whitespace-nowrap text-sm text-white/90">{isTattoo ? (form.tattoo_location || '-') : (form.piercing_type || '-')}</td>
                   <td className="px-2 text-center">
-                    <button type="button" className="px-4 py-1.5 rounded-lg font-semibold border-none bg-white text-black text-xs tracking-tight shadow hover:bg-gray-100 focus:outline-none" onClick={e => { e.stopPropagation(); openPaymentModal(form, customer); }}>Record Payment</button>
+                    <button 
+                      type="button" 
+                      className={`px-4 py-1.5 rounded-lg font-semibold border-none bg-white text-black text-xs tracking-tight shadow hover:bg-gray-100 focus:outline-none ${((form.payment || patchedIds[form.id]) ? 'opacity-50 cursor-not-allowed' : '')}`} 
+                      onClick={e => { if (!form.payment && !patchedIds[form.id]) { e.stopPropagation(); openPaymentModal(form, customer); } }}
+                      disabled={form.payment === true || patchedIds[form.id] === true}
+                    >
+                      {form.payment === true || patchedIds[form.id] === true ? 'Payment Recorded' : 'Record Payment'}
+                    </button>
                   </td>
                   <td className="px-2 text-right">
                     <button onClick={e => { e.stopPropagation(); setExpandedFormId(expanded ? null : uniqueId); }} aria-label={expanded ? 'Hide details' : 'Show details'} className={`text-2xl rounded-full p-[3px] ml-1 transition ${expanded ? 'bg-sky-700 text-white' : 'bg-black/20 text-sky-300 hover:bg-sky-500 hover:text-white'}`}>{expanded ? <FiChevronUp /> : <FiChevronDown />}</button>
