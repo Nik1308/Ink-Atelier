@@ -65,109 +65,82 @@ const LoginPage = () => {
     <>
       <SEO 
         title="Admin Login - Ink Atelier"
-        description="Secure admin login for Ink Atelier staff. Access customer management, consent forms, and payment records."
-        keywords="admin login, ink atelier admin, staff login, customer management, tattoo studio admin"
+        description="Secure admin login for Ink Atelier staff. Login with email address."
+        keywords="admin login, ink atelier admin, staff login, customer management, tattoo studio admin, email admin login"
         image="/assets/images/logo.jpg"
         url="https://inkatelier.in/login"
         type="website"
       />
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
-              Welcome to Ink Atelier
-            </h2>
-            <p className="text-sm text-gray-600">
-              Sign in to your account
-            </p>
-          </div>
+      <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-black via-gray-900 to-gray-800 py-10">
+        <div className="w-full max-w-md flex flex-col items-center mb-6">
+          <img src={process.env.PUBLIC_URL + '/logo192.png'} alt="Ink Atelier Logo" className="w-16 h-16 rounded-full border-4 border-white/20 mb-3 bg-white" />
+          <h2 className="text-3xl font-bold text-white mb-1 text-center tracking-tight">Ink Atelier Admin</h2>
+          <p className="text-base text-white/70 mb-3 text-center">Sign in to your account</p>
         </div>
-
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-                  {error}
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Enter your email"
-                  />
-                </div>
+        <div className="w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl px-8 py-9 flex flex-col items-center">
+          <form className="w-full space-y-6" onSubmit={handleSubmit} autoComplete="on">
+            {error && (
+              <div className="bg-rose-900/30 border border-rose-400 text-rose-200 px-4 py-2 rounded-xl text-center text-base mb-2">
+                {error}
               </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Enter your password"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Signing in...' : 'Sign in'}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-6">
-              <div className="text-center">
-                <p className="text-sm text-gray-500">
-                  Don't have an account? Contact us to get access.
-                </p>
-                <a
-                  href="https://wa.me/9636301625"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center text-indigo-600 hover:text-indigo-500 text-sm font-medium"
-                >
-                  Contact via WhatsApp
-                </a>
-              </div>
+            )}
+            <div className="w-full">
+              <label htmlFor="email" className="block text-sm font-semibold text-white mb-1">Email Address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Enter your email address"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-lg text-white placeholder-white/60 focus:ring-2 focus:ring-sky-400 focus:outline-none transition"
+              />
             </div>
+            <div className="w-full">
+              <label htmlFor="password" className="block text-sm font-semibold text-white mb-1">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Enter your password"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-lg text-white placeholder-white/60 focus:ring-2 focus:ring-sky-400 focus:outline-none transition"
+              />
+            </div>
+            <div className="flex items-center mb-2">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 text-sky-400 border-white/25 rounded bg-white/10 mr-2 focus:ring-sky-400 transition"
+              />
+              <label htmlFor="remember-me" className="text-sm text-white/80">Remember me</label>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-lg shadow text-lg font-bold bg-white text-black border-white/60 border-2 hover:bg-gray-100 transition focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+          <div className="text-center mt-6">
+            <p className="text-sm text-white/60 mb-3">
+              Don&apos;t have an account? Contact us to get access.
+            </p>
+            <a
+              href="https://wa.me/9636301625"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-sky-200 hover:text-sky-400 text-sm font-semibold"
+            >
+              Contact via WhatsApp
+            </a>
           </div>
         </div>
       </div>

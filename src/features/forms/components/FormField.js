@@ -15,6 +15,7 @@ const FormField = React.forwardRef(({
   accept,
   inputClassName = "",
   containerClassName = "",
+  labelClassName = "",
   ...props
 }, ref) => {
   const defaultInputClasses =
@@ -36,7 +37,6 @@ const FormField = React.forwardRef(({
             {...props}
           />
         );
-      
       case "select":
         return (
           <select
@@ -56,7 +56,6 @@ const FormField = React.forwardRef(({
             ))}
           </select>
         );
-      
       case "file":
         return (
           <input
@@ -70,7 +69,6 @@ const FormField = React.forwardRef(({
             {...props}
           />
         );
-      
       case "number":
         return (
           <input
@@ -87,7 +85,6 @@ const FormField = React.forwardRef(({
             {...props}
           />
         );
-      
       case "phone":
         return (
           <div className="flex items-center w-full max-w-[400px]">
@@ -108,7 +105,6 @@ const FormField = React.forwardRef(({
             />
           </div>
         );
-      
       default:
         return (
           <input
@@ -128,7 +124,7 @@ const FormField = React.forwardRef(({
 
   return (
     <div className={`flex flex-col gap-2 ${containerClassName}`}>
-      <label htmlFor={name} className="flex items-center gap-1">
+      <label htmlFor={name} className={`flex items-center gap-1 ${labelClassName}`}>
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       {renderField()}

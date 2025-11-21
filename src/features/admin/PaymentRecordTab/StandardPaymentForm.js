@@ -9,6 +9,7 @@ const initialStandardForm = {
   amount: '',
   paymentType: '',
   service: '',
+  gst: '',
 };
 
 const StandardPaymentForm = () => {
@@ -36,6 +37,7 @@ const StandardPaymentForm = () => {
     if (!validateNumber(form.amount)) return 'Enter a valid amount.';
     if (!validateRequired(form.paymentType)) return 'Select a payment type.';
     if (!validateRequired(form.service)) return 'Select a service.';
+    if (!validateNumber(form.gst)) return 'Enter a valid GST amount.';
     return null;
   };
 
@@ -61,6 +63,7 @@ const StandardPaymentForm = () => {
           customer_id: customerId,
           payment_date: form.date,
           amount: Number(form.amount),
+          gst: Number(form.gst),
           payment_type: form.paymentType,
           service: form.service,
         }),
@@ -84,6 +87,7 @@ const StandardPaymentForm = () => {
         onChange={handleChange}
         placeholder="10-digit mobile number (optional)"
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Service"
@@ -97,6 +101,7 @@ const StandardPaymentForm = () => {
           { value: 'piercing', label: 'Piercing' },
         ]}
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Payment Date"
@@ -106,6 +111,7 @@ const StandardPaymentForm = () => {
         onChange={handleChange}
         required
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Amount (₹)"
@@ -117,6 +123,19 @@ const StandardPaymentForm = () => {
         min="1"
         placeholder="Enter amount"
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
+      />
+      <FormField
+        label="GST (₹)"
+        name="gst"
+        type="number"
+        value={form.gst}
+        onChange={handleChange}
+        required
+        min="0"
+        placeholder="Enter GST amount"
+        inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       <FormField
         label="Payment Type"
@@ -131,6 +150,7 @@ const StandardPaymentForm = () => {
           { value: 'Card', label: 'Card' },
         ]}
         inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
       />
       {error && (
         <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md w-full max-w-[400px]">{error}</div>
@@ -142,7 +162,7 @@ const StandardPaymentForm = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          className="w-full py-3 mt-2 rounded-xl shadow-lg text-lg font-bold bg-white text-black border border-white/60 hover:bg-gray-100 focus:outline-none disabled:opacity-50 transition"
         >
           {loading ? 'Submitting...' : 'Submit Payment'}
         </button>
