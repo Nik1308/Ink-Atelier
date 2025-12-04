@@ -188,8 +188,8 @@ const MessagesTab = () => {
             >Next</button>
           </div>
         )}
-    </div>
-  );
+  </div>
+);
 };
 
 export default MessagesTab; 

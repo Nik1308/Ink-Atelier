@@ -184,6 +184,7 @@ const DashboardTab = () => {
     .filter(p => (p.service && /piercing/i.test(p.service)) || (p.service_type && /piercing/i.test(p.service_type)))
     .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
   const totalRevenue = filteredPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+  const totalGST = filteredPayments.reduce((sum, p) => sum + (parseFloat(p.gst) || 0), 0);
   // Card values for new layout:
   const netProfit = totalRevenue - totalExpenses;
   const mainCards = [
@@ -194,6 +195,7 @@ const DashboardTab = () => {
   const detailCards = [
     { label: 'Tattoo Revenue', value: `₹${tattooRevenue.toLocaleString()}`, key: 'tattoo' },
     { label: 'Piercing Revenue', value: `₹${piercingRevenue.toLocaleString()}`, key: 'piercing' },
+    { label: 'GST Collected', value: `₹${totalGST.toLocaleString()}`, key: 'gst', className: 'text-cyan-200 border-cyan-400 bg-cyan-900/30' },
   ];
 
   // Revenue by payment_type
@@ -251,9 +253,9 @@ const DashboardTab = () => {
           </GlassCard>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {detailCards.map(card => (
-          <GlassCard key={card.key} className="flex flex-col items-start justify-center h-32 text-left bg-white/10 border-white/20">
+          <GlassCard key={card.key} className={`flex flex-col items-start justify-center h-32 text-left bg-white/10 border-white/20 ${card.className || ''}`}>
             <div className="text-base font-medium text-white/80 mb-2">{card.label}</div>
             <div className="text-4xl font-bold font-mono tracking-tight text-amber-100 drop-shadow">{card.value}</div>
           </GlassCard>

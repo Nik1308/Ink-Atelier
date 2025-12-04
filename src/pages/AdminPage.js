@@ -10,6 +10,8 @@ import PaymentsTab from '../features/admin/PaymentTab';
 import LedgerTab from '../features/admin/LedgerTab';
 import BookingsTab from '../features/admin/UpcomingBookingTab';
 import MessagesTab from '../features/admin/MessagesTab';
+import LeadsTab from '../features/admin/LeadsTab';
+import { useAdminResources } from '../features/admin/hooks/useAdminResources';
 
 const TAB_LABELS = {
   dashboard: 'Dashboard',
@@ -18,12 +20,13 @@ const TAB_LABELS = {
   payments: 'Payments',
   ledger: 'Ledger',
   bookings: 'Bookings',
-  messages: 'Messages'
+  messages: 'Messages',
+  leads: 'Leads'
 };
 
 const ROLE_TAB_KEYS = {
-  admin: ['dashboard', 'customers', 'consents', 'payments', 'ledger', 'bookings', 'messages'],
-  manager: ['consents', 'payments'],
+  admin: ['dashboard', 'leads', 'customers', 'consents', 'payments', 'ledger', 'bookings', 'messages'],
+  manager: ['leads','consents', 'payments', 'messages'],
 };
 
 const AdminPage = () => {
@@ -31,6 +34,10 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
+  
+  // Prefetch all admin resources when admin page loads
+  // This ensures data is cached and available for all tabs without refetching
+  useAdminResources();
 
   // Only allow tabs for the user's role
   const allowedTabs = userData?.role === 'manager' ? ROLE_TAB_KEYS.manager : ROLE_TAB_KEYS.admin;
@@ -90,6 +97,7 @@ const AdminPage = () => {
         <AdminNav onLogout={handleLogout} activeTab={activeTab} onTabChange={setActiveTab} allowedTabs={allowedTabs} />
         <div className="pt-20 max-w-7xl mx-auto px-2 sm:px-6">
           {activeTab === 'dashboard' && allowedTabs.includes('dashboard') && <DashboardTab />}
+          {activeTab === 'leads' && <LeadsTab />}
           {activeTab === 'customers' && allowedTabs.includes('customers') && <CustomersTab />}
           {activeTab === 'consents' && <ConsentsTab />}
           {activeTab === 'payments' && <PaymentsTab />}
