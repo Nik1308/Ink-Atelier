@@ -19,7 +19,7 @@ const ErrorMessage = ({
         <div className="ml-3">
           <h3 className="text-sm font-medium text-red-800">{title}</h3>
           <div className="mt-2 text-sm text-red-700">
-            <p>{error}</p>
+            <p>{error?.message || error?.toString() || String(error)}</p>
           </div>
           {onRetry && (
             <div className="mt-4">

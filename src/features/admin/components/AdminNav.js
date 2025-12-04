@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Drawer from '../../common/ui/Drawer';
-import { FiHome, FiUsers, FiFileText, FiCreditCard, FiBarChart2, FiMessageCircle, FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiHome, FiUsers, FiFileText, FiCreditCard, FiBarChart2, FiMessageCircle, FiLogOut, FiMenu, FiUserPlus } from 'react-icons/fi';
 
 const NAV_LINKS = [
   { label: 'Dashboard', key: 'dashboard', icon: <FiHome /> },
+  { label: 'Leads', key: 'leads', icon: <FiUserPlus /> },
   { label: 'Customers', key: 'customers', icon: <FiUsers /> },
   { label: 'Consents', key: 'consents', icon: <FiFileText /> },
   { label: 'Payments', key: 'payments', icon: <FiCreditCard /> },
