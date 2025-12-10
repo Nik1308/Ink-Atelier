@@ -22,7 +22,7 @@ const LeadsTab = () => {
     name: '',
     phone: '',
     service: '',
-    service_date: '',
+    serviceDate: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,10 +32,10 @@ const LeadsTab = () => {
     { startDate: startOfDay(new Date()), endDate: endOfDay(new Date()), key: 'selection' }
   ]);
   const [filters, setFilters] = useState({
-    is_converted: false, // false = not selected, true = show only converted
-    follow_up_1: false,
-    follow_up_2: false,
-    follow_up_3: false,
+    isConverted: false, // false = not selected, true = show only converted
+    followUp1: false,
+    followUp2: false,
+    followUp3: false,
   });
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef(null);
@@ -73,12 +73,20 @@ const LeadsTab = () => {
     setSuccess(null);
 
     try {
+      // Convert camelCase to snake_case for API
+      const apiData = {
+        name: formData.name,
+        phone: formData.phone,
+        service: formData.service,
+        service_date: formData.serviceDate,
+      };
+      
       await fetchApi(LEADS_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(apiData),
       });
 
       setSuccess('Lead added successfully!');
@@ -86,7 +94,7 @@ const LeadsTab = () => {
         name: '',
         phone: '',
         service: '',
-        service_date: '',
+        serviceDate: '',
       });
       setIsModalOpen(false);
       // Refetch leads
@@ -109,12 +117,19 @@ const LeadsTab = () => {
     
     try {
       const newValue = !lead[field];
+      // Convert camelCase field name to snake_case for API
+      // Handles both uppercase letters and numbers: followUp1 -> follow_up_1
+      const snakeCaseField = field
+        .replace(/([A-Z])/g, '_$1')  // Add underscore before uppercase
+        .replace(/(\d)/g, '_$1')      // Add underscore before numbers
+        .toLowerCase()
+        .replace(/^_/, '');           // Remove leading underscore if any
       await fetchApi(`${LEADS_API_URL}/${leadId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ [field]: newValue }),
+        body: JSON.stringify({ [snakeCaseField]: newValue }),
       });
 
       // Refetch leads
@@ -147,23 +162,23 @@ const LeadsTab = () => {
         );
         if (!dateMatch) return false;
 
-        // Filter by is_converted (only show if filter is enabled and value is true)
-        if (filters.is_converted && !lead.is_converted) {
+        // Filter by isConverted (only show if filter is enabled and value is true)
+        if (filters.isConverted && !lead.isConverted) {
           return false;
         }
 
-        // Filter by follow_up_1 (only show if filter is enabled and value is true)
-        if (filters.follow_up_1 && !lead.follow_up_1) {
+        // Filter by followUp1 (only show if filter is enabled and value is true)
+        if (filters.followUp1 && !lead.followUp1) {
           return false;
         }
 
-        // Filter by follow_up_2 (only show if filter is enabled and value is true)
-        if (filters.follow_up_2 && !lead.follow_up_2) {
+        // Filter by followUp2 (only show if filter is enabled and value is true)
+        if (filters.followUp2 && !lead.followUp2) {
           return false;
         }
 
-        // Filter by follow_up_3 (only show if filter is enabled and value is true)
-        if (filters.follow_up_3 && !lead.follow_up_3) {
+        // Filter by followUp3 (only show if filter is enabled and value is true)
+        if (filters.followUp3 && !lead.followUp3) {
           return false;
         }
 
@@ -269,18 +284,18 @@ const LeadsTab = () => {
                 <div className="space-y-3">
                   {/* Is Converted Filter */}
                   <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('is_converted')}>
+                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('isConverted')}>
                       Is Converted
                     </label>
                     <button
-                      onClick={() => handleFilterToggle('is_converted')}
+                      onClick={() => handleFilterToggle('isConverted')}
                       className={`relative w-12 h-6 rounded-full transition ${
-                        filters.is_converted ? 'bg-green-500' : 'bg-white/20'
+                        filters.isConverted ? 'bg-green-500' : 'bg-white/20'
                       }`}
                     >
                       <span
                         className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.is_converted ? 'translate-x-6' : 'translate-x-0'
+                          filters.isConverted ? 'translate-x-6' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -288,18 +303,18 @@ const LeadsTab = () => {
 
                   {/* Follow Up 1 Filter */}
                   <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('follow_up_1')}>
+                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp1')}>
                       Follow Up 1
                     </label>
                     <button
-                      onClick={() => handleFilterToggle('follow_up_1')}
+                      onClick={() => handleFilterToggle('followUp1')}
                       className={`relative w-12 h-6 rounded-full transition ${
-                        filters.follow_up_1 ? 'bg-green-500' : 'bg-white/20'
+                        filters.followUp1 ? 'bg-green-500' : 'bg-white/20'
                       }`}
                     >
                       <span
                         className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.follow_up_1 ? 'translate-x-6' : 'translate-x-0'
+                          filters.followUp1 ? 'translate-x-6' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -307,18 +322,18 @@ const LeadsTab = () => {
 
                   {/* Follow Up 2 Filter */}
                   <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('follow_up_2')}>
+                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp2')}>
                       Follow Up 2
                     </label>
                     <button
-                      onClick={() => handleFilterToggle('follow_up_2')}
+                      onClick={() => handleFilterToggle('followUp2')}
                       className={`relative w-12 h-6 rounded-full transition ${
-                        filters.follow_up_2 ? 'bg-green-500' : 'bg-white/20'
+                        filters.followUp2 ? 'bg-green-500' : 'bg-white/20'
                       }`}
                     >
                       <span
                         className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.follow_up_2 ? 'translate-x-6' : 'translate-x-0'
+                          filters.followUp2 ? 'translate-x-6' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -326,18 +341,18 @@ const LeadsTab = () => {
 
                   {/* Follow Up 3 Filter */}
                   <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('follow_up_3')}>
+                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp3')}>
                       Follow Up 3
                     </label>
                     <button
-                      onClick={() => handleFilterToggle('follow_up_3')}
+                      onClick={() => handleFilterToggle('followUp3')}
                       className={`relative w-12 h-6 rounded-full transition ${
-                        filters.follow_up_3 ? 'bg-green-500' : 'bg-white/20'
+                        filters.followUp3 ? 'bg-green-500' : 'bg-white/20'
                       }`}
                     >
                       <span
                         className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.follow_up_3 ? 'translate-x-6' : 'translate-x-0'
+                          filters.followUp3 ? 'translate-x-6' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -348,7 +363,7 @@ const LeadsTab = () => {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={() => {
-                      setFilters({ is_converted: false, follow_up_1: false, follow_up_2: false, follow_up_3: false });
+                      setFilters({ isConverted: false, followUp1: false, followUp2: false, followUp3: false });
                     }}
                     className="mt-4 w-full px-4 py-2 rounded-lg text-sm font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition"
                   >
@@ -411,9 +426,9 @@ const LeadsTab = () => {
             />
             <FormField
               label="Service Date"
-              name="service_date"
+              name="serviceDate"
               type="date"
-              value={formData.service_date}
+              value={formData.serviceDate}
               onChange={handleChange}
               required
               inputClassName="w-full bg-white/10 text-white border-white/30"
@@ -500,54 +515,54 @@ const LeadsTab = () => {
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleToggle(lead.id, 'is_converted')}
-                      disabled={lead.is_converted || togglingButtons.has(`${lead.id}-is_converted`)}
+                      onClick={() => handleToggle(lead.id, 'isConverted')}
+                      disabled={lead.isConverted || togglingButtons.has(`${lead.id}-isConverted`)}
                       className={`px-4 py-1.5 rounded-xl text-xs font-bold shadow transition ${
-                        lead.is_converted
+                        lead.isConverted
                           ? 'bg-green-500 text-white cursor-not-allowed opacity-75'
                           : 'bg-white/10 text-white/70 hover:bg-white/20'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      {lead.is_converted ? 'Yes' : 'No'}
+                      {lead.isConverted ? 'Yes' : 'No'}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleToggle(lead.id, 'follow_up_1')}
-                      disabled={lead.follow_up_1 || togglingButtons.has(`${lead.id}-follow_up_1`)}
+                      onClick={() => handleToggle(lead.id, 'followUp1')}
+                      disabled={lead.followUp1 || togglingButtons.has(`${lead.id}-followUp1`)}
                       className={`px-4 py-1.5 rounded-xl text-xs font-bold shadow transition ${
-                        lead.follow_up_1
+                        lead.followUp1
                           ? 'bg-green-500 text-white cursor-not-allowed opacity-75'
                           : 'bg-white/10 text-white/70 hover:bg-white/20'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      {lead.follow_up_1 ? 'Done' : 'Pending'}
+                      {lead.followUp1 ? 'Done' : 'Pending'}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleToggle(lead.id, 'follow_up_2')}
-                      disabled={lead.follow_up_2 || togglingButtons.has(`${lead.id}-follow_up_2`)}
+                      onClick={() => handleToggle(lead.id, 'followUp2')}
+                      disabled={lead.followUp2 || togglingButtons.has(`${lead.id}-followUp2`)}
                       className={`px-4 py-1.5 rounded-xl text-xs font-bold shadow transition ${
-                        lead.follow_up_2
+                        lead.followUp2
                           ? 'bg-green-500 text-white cursor-not-allowed opacity-75'
                           : 'bg-white/10 text-white/70 hover:bg-white/20'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      {lead.follow_up_2 ? 'Done' : 'Pending'}
+                      {lead.followUp2 ? 'Done' : 'Pending'}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleToggle(lead.id, 'follow_up_3')}
-                      disabled={lead.follow_up_3 || togglingButtons.has(`${lead.id}-follow_up_3`)}
+                      onClick={() => handleToggle(lead.id, 'followUp3')}
+                      disabled={lead.followUp3 || togglingButtons.has(`${lead.id}-followUp3`)}
                       className={`px-4 py-1.5 rounded-xl text-xs font-bold shadow transition ${
-                        lead.follow_up_3
+                        lead.followUp3
                           ? 'bg-green-500 text-white cursor-not-allowed opacity-75'
                           : 'bg-white/10 text-white/70 hover:bg-white/20'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      {lead.follow_up_3 ? 'Done' : 'Pending'}
+                      {lead.followUp3 ? 'Done' : 'Pending'}
                     </button>
                   </td>
                 </tr>
