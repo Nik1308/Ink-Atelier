@@ -23,11 +23,8 @@ export async function handleCustomerLookup(phone, name = '') {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: name || '',
+          name: name || 'Unknown Customer',
           phone: formattedPhone,
-          email: '',
-          date_of_birth: '',
-          address: '',
         }),
       });
       return newCustomer.id;

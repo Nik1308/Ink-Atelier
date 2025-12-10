@@ -12,11 +12,11 @@ export const useCustomerData = (customers, consentForms, payments, searchQuery) 
   }, [customers, searchQuery]);
 
   const getCustomerConsentForms = (customerId) => {
-    return consentForms.filter(form => form.customer_id === customerId);
+    return consentForms.filter(form => form.customerId === customerId);
   };
 
   const getCustomerPayments = (customerId) => {
-    return payments.filter(payment => payment.customer_id === customerId);
+    return payments.filter(payment => payment.customerId === customerId);
   };
 
   return {

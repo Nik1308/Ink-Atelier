@@ -34,8 +34,8 @@ const Table = ({ columns = [], data = [], emptyState = 'No data found.', keyPref
             <tr key={
               row.id 
                 ? `${keyPrefix}-${row.type || 'unknown'}-${row.id}-${rowIdx}` 
-                : row.customer_id 
-                  ? `${keyPrefix}-${row.type || 'unknown'}-${row.customer_id}-${row.created_at || rowIdx}-${rowIdx}` 
+                : row.customerId 
+                  ? `${keyPrefix}-${row.type || 'unknown'}-${row.customerId}-${row.createdAt || rowIdx}-${rowIdx}` 
                   : `${keyPrefix}-${row.type || 'unknown'}-${rowIdx}`
             }>
               {columns.map((col, colIdx) => (

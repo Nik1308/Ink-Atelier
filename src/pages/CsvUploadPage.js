@@ -166,7 +166,7 @@ const CsvUploadPage = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name || "",
+          name: name || "Unknown Customer",
           phone: formattedPhone,
           email: '',
           date_of_birth: dateOfBirth, // Use dob if available, always formatted

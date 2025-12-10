@@ -11,7 +11,7 @@ import LedgerTab from '../features/admin/LedgerTab';
 import BookingsTab from '../features/admin/UpcomingBookingTab';
 import MessagesTab from '../features/admin/MessagesTab';
 import LeadsTab from '../features/admin/LeadsTab';
-import { useAdminResources } from '../features/admin/hooks/useAdminResources';
+import { useLazyAdminResources } from '../features/admin/hooks/useLazyAdminResources';
 
 const TAB_LABELS = {
   dashboard: 'Dashboard',
@@ -35,9 +35,17 @@ const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
   
-  // Prefetch all admin resources when admin page loads
-  // This ensures data is cached and available for all tabs without refetching
-  useAdminResources();
+  // Lazy load resources based on active tab
+  // Only fetch data for the current tab
+  useLazyAdminResources({
+    enableCustomers: activeTab === 'customers' || activeTab === 'messages' || activeTab === 'dashboard',
+    enablePayments: activeTab === 'payments' || activeTab === 'messages' || activeTab === 'dashboard' || activeTab === 'ledger',
+    enableAdvancePayments: activeTab === 'bookings' || activeTab === 'dashboard',
+    enableTattooConsents: activeTab === 'consents' || activeTab === 'customers',
+    enablePiercingConsents: activeTab === 'consents' || activeTab === 'customers',
+    enableExpenses: activeTab === 'ledger' || activeTab === 'dashboard',
+    enableLeads: activeTab === 'leads',
+  });
 
   // Only allow tabs for the user's role
   const allowedTabs = userData?.role === 'manager' ? ROLE_TAB_KEYS.manager : ROLE_TAB_KEYS.admin;

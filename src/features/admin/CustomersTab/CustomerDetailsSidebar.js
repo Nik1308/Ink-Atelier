@@ -20,7 +20,7 @@ export default function CustomerDetailsSidebar({ customer, getCustomerConsentFor
   const consents = getCustomerConsentForms(customer.id) || [];
   const payments = getCustomerPayments(customer.id) || [];
   const lifetimeSpend = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-  const referredCustomers = allCustomers.filter(c => c.referred_by_customer_id === customer.id);
+  const referredCustomers = allCustomers.filter(c => c.referredByCustomerId === customer.id);
   const referrals = referredCustomers.length;
 
   return (
@@ -78,8 +78,8 @@ export default function CustomerDetailsSidebar({ customer, getCustomerConsentFor
       <div className="flex-1 overflow-y-auto pt-6 bg-gray-50">
         {activeTab === 'details' && (
           <div className="space-y-3 px-6">
-            {customer.date_of_birth && (
-              <div><span className="font-bold">Date of Birth:</span> <span className="ml-1">{customer.date_of_birth}</span></div>
+            {customer.dateOfBirth && (
+              <div><span className="font-bold">Date of Birth:</span> <span className="ml-1">{customer.dateOfBirth}</span></div>
             )}
             {customer.email && (
               <div><span className="font-bold">Email:</span> <span className="ml-1">{customer.email}</span></div>
@@ -87,8 +87,8 @@ export default function CustomerDetailsSidebar({ customer, getCustomerConsentFor
             {customer.address && (
               <div><span className="font-bold">Address:</span> <span className="ml-1">{customer.address}</span></div>
             )}
-            {customer.heard_about_us && (
-              <div><span className="font-bold">Heard About Us:</span> <span className="ml-1">{customer.heard_about_us}</span></div>
+            {customer.heardAboutUs && (
+              <div><span className="font-bold">Heard About Us:</span> <span className="ml-1">{customer.heardAboutUs}</span></div>
             )}
           </div>
         )}
@@ -112,7 +112,7 @@ export default function CustomerDetailsSidebar({ customer, getCustomerConsentFor
                     {consents.map((form, index) => {
                       const isTattoo = form.type === 'tattoo';
                       return (
-                        <tr key={`customer-consent-${customer.id}-${form.id || form.created_at || index}`}>
+                        <tr key={`customer-consent-${customer.id}-${form.id || form.createdAt || index}`}>
                           {/* Type as pill */}
                           <td className="px-6 py-4 whitespace-nowrap text-left">
                             <span className="inline-block px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-sm font-semibold">
@@ -122,22 +122,22 @@ export default function CustomerDetailsSidebar({ customer, getCustomerConsentFor
                           {/* Date */}
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             {isTattoo
-                              ? (form.tattoo_date ? new Date(form.tattoo_date).toLocaleDateString() : 'N/A')
-                              : (form.piercing_date ? new Date(form.piercing_date).toLocaleDateString() : 'N/A')}
+                              ? (form.tattooDate ? new Date(form.tattooDate).toLocaleDateString() : 'N/A')
+                              : (form.piercingDate ? new Date(form.piercingDate).toLocaleDateString() : 'N/A')}
                           </td>
                           {/* Location/Type multiline */}
                           <td className="px-6 py-4 whitespace-pre-line text-center">
                             {isTattoo
-                              ? (form.tattoo_location || '—')
-                              : (form.piercing_type
-                                  ? form.piercing_type + ' -' + (form.piercing_subtype ? `\n${form.piercing_subtype}` : '')
+                              ? (form.tattooLocation || '—')
+                              : (form.piercingType
+                                  ? form.piercingType + ' -' + (form.piercingSubtype ? `\n${form.piercingSubtype}` : '')
                                   : '—')}
                           </td>
                           {/* Artist */}
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             {isTattoo
-                              ? (form.tattoo_artist || '—')
-                              : (form.piercing_artist || '—')}
+                              ? (form.tattooArtist || '—')
+                              : (form.piercingArtist || '—')}
                           </td>
                           {/* Actions */}
                           <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -183,7 +183,7 @@ export default function CustomerDetailsSidebar({ customer, getCustomerConsentFor
                   <tbody className="divide-y divide-gray-100">
                     {referredCustomers.map((rc, index) => (
                       <tr key={`customer-referral-${customer.id}-${rc.id || index}`}>
-                        <td className="w-1/3 px-6 py-4 whitespace-nowrap text-left">{rc.created_at ? new Date(rc.created_at).toLocaleDateString() : 'N/A'}</td>
+                        <td className="w-1/3 px-6 py-4 whitespace-nowrap text-left">{rc.createdAt ? new Date(rc.createdAt).toLocaleDateString() : 'N/A'}</td>
                         <td className="w-1/3 px-6 py-4 whitespace-nowrap text-center">{rc.name}</td>
                         <td className="w-1/3 px-6 py-4 whitespace-nowrap text-right">{rc.phone}</td>
                       </tr>

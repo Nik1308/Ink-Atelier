@@ -54,7 +54,7 @@ const StandardPaymentForm = () => {
     try {
       let customerId = null;
       if (form.phone) {
-        customerId = await handleCustomerLookup(form.phone);
+        customerId = await handleCustomerLookup(form.phone, form.name);
       }
       await fetchApi(PAYMENT_API_URL, {
         method: 'POST',

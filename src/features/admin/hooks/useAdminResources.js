@@ -7,10 +7,10 @@ function mergeConsentForms(tattooForms, piercingForms) {
     ...(Array.isArray(tattooForms) ? tattooForms.map(form => ({ ...form, type: 'tattoo' })) : []),
     ...(Array.isArray(piercingForms) ? piercingForms.map(form => ({ ...form, type: 'piercing' })) : [])
   ];
-  // Sort by created_at descending (newest first)
+  // Sort by createdAt descending (newest first)
   return allForms.sort((a, b) => {
-    const aDate = new Date(a.created_at || a.tattoo_date || a.piercing_date || 0);
-    const bDate = new Date(b.created_at || b.tattoo_date || b.piercing_date || 0);
+    const aDate = new Date(a.createdAt || a.tattooDate || a.piercingDate || 0);
+    const bDate = new Date(b.createdAt || b.tattooDate || b.piercingDate || 0);
     return bDate - aDate;
   });
 }

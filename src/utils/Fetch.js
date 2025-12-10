@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getAuthToken } from "./authUtils";
 
 /**
  * Usage:
@@ -16,7 +17,18 @@ const Fetch = ({ url, options, children }) => {
     setLoading(true);
     setError(null);
     setData(null);
-    fetch(url, options)
+    
+    // Add authentication token if available
+    const token = getAuthToken();
+    const fetchOptions = { ...options };
+    if (token) {
+      fetchOptions.headers = {
+        ...fetchOptions.headers,
+        'Authorization': `Bearer ${token}`,
+      };
+    }
+    
+    fetch(url, fetchOptions)
       .then((res) => {
         if (!res.ok) throw new Error(`Error: ${res.status}`);
         return res.json();
@@ -47,8 +59,18 @@ export default Fetch;
  * Utility function for imperative API calls
  * Usage: await fetchApi(url, options)
  */
-export async function fetchApi(url, options) {
+export async function fetchApi(url, options = {}) {
   const fetchOptions = { ...options };
+  
+  // Add authentication token if available
+  const token = getAuthToken();
+  if (token) {
+    fetchOptions.headers = {
+      ...fetchOptions.headers,
+      'Authorization': `Bearer ${token}`,
+    };
+  }
+  
   // If body is FormData, remove Content-Type header so browser sets it
   if (fetchOptions.body instanceof FormData && fetchOptions.headers) {
     const headers = { ...fetchOptions.headers };
@@ -57,14 +79,84 @@ export async function fetchApi(url, options) {
     }
     fetchOptions.headers = headers;
   }
-  const res = await fetch(url, fetchOptions);
-  if (!res.ok) {
-    let message = `Error: ${res.status}`;
+  
+  // Log request details for debugging
+  const requestLog = {
+    method: fetchOptions.method || 'GET',
+    url,
+    headers: fetchOptions.headers,
+    body: fetchOptions.body instanceof FormData ? '[FormData]' : fetchOptions.body,
+  };
+  console.group(`🔵 API Request: ${requestLog.method} ${url}`);
+  console.log('Request Details:', requestLog);
+  
+  try {
+    const res = await fetch(url, fetchOptions);
+    
+    // Log response details
+    const responseLog = {
+      status: res.status,
+      statusText: res.statusText,
+      ok: res.ok,
+      headers: Object.fromEntries(res.headers.entries()),
+    };
+    console.log('Response Status:', responseLog);
+    
+    // Clone response to read body without consuming it
+    const responseClone = res.clone();
+    let responseData = null;
+    
     try {
-      const data = await res.json();
-      message = data.error || data.message || message;
-    } catch {}
-    throw new Error(message);
+      responseData = await res.json();
+      console.log('Response Data:', responseData);
+    } catch (e) {
+      // If not JSON, try text
+      try {
+        const text = await responseClone.text();
+        console.log('Response Text:', text);
+        responseData = text;
+      } catch (e2) {
+        console.log('Response: [Unable to parse]');
+      }
+    }
+    
+    if (!res.ok) {
+      let message = `Error: ${res.status} ${res.statusText}`;
+      let errorData = null;
+      
+      try {
+        errorData = responseData;
+        if (errorData && typeof errorData === 'object') {
+          message = errorData.error || errorData.message || 
+                   (Array.isArray(errorData.message) ? errorData.message.join(', ') : errorData.message) || 
+                   message;
+        }
+      } catch {}
+      
+      console.error('❌ API Error:', {
+        status: res.status,
+        statusText: res.statusText,
+        message,
+        errorData,
+      });
+      
+      console.groupEnd();
+      
+      const error = new Error(message);
+      error.status = res.status;
+      error.statusText = res.statusText;
+      error.data = errorData;
+      throw error;
+    }
+    
+    console.log('✅ API Success');
+    
+    console.groupEnd();
+    return responseData;
+  } catch (error) {
+    console.error('❌ API Request Failed:', error);
+    
+    console.groupEnd();
+    throw error;
   }
-  return res.json();
 } 

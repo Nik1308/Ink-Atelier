@@ -32,7 +32,7 @@ const handleCustomerLookup = async (customerData, setError) => {
       if (customerData.address) {
         updateData.address = customerData.address;
       }
-      if (customerData.heardAboutUs && !existingCustomer.heard_about_us) {
+      if (customerData.heardAboutUs && !existingCustomer.heardAboutUs) {
         updateData.heard_about_us = customerData.heardAboutUs;
       }
       
@@ -104,14 +104,14 @@ const convertToBoolean = (value) => value === "yes";
  * @returns {object} - Health information object
  */
 const createHealthInfo = (form) => ({
-  has_medications: convertToBoolean(form.medications),
-  medications_list: form.medicationsList,
-  has_allergies: convertToBoolean(form.allergies),
-  allergies_list: form.allergiesList,
-  has_medical_conditions: convertToBoolean(form.medicalConditions),
-  medical_conditions_list: form.medicalConditionsList,
-  alcohol_drugs: convertToBoolean(form.alcoholDrugs),
-  pregnant_nursing: convertToBoolean(form.pregnantNursing),
+  hasMedications: convertToBoolean(form.medications),
+  medicationsList: form.medicationsList,
+  hasAllergies: convertToBoolean(form.allergies),
+  allergiesList: form.allergiesList,
+  hasMedicalConditions: convertToBoolean(form.medicalConditions),
+  medicalConditionsList: form.medicalConditionsList,
+  alcoholDrugs: convertToBoolean(form.alcoholDrugs),
+  pregnantNursing: convertToBoolean(form.pregnantNursing),
 });
 
 /**
@@ -169,16 +169,15 @@ export async function submitTattooConsentForm(form, setLoading, setError) {
     // Step 3: Create consent form payload
     const healthInfo = createHealthInfo(form);
     const payload = {
-      customer_id: customerId,
-      tattoo_location: form.tattooLocation,
-      tattoo_design: tattooDesignMeta,
-      tattoo_artist: form.tattooArtist,
-      tattoo_date: form.tattooDate,
-      allergies: form.allergies === "yes" ? "Yes" : "No",
-      medications: form.medications === "yes" ? "Yes" : "No",
-      signed: !!form.agree,
-      date_signed: new Date().toISOString(),
-      agree: !!form.agree,
+      customerId: Number(customerId) || undefined,
+      tattooLocation: form.tattooLocation,
+      tattooDesign: tattooDesignMeta?.path || tattooDesignMeta?.url || undefined,
+      tattooArtist: form.tattooArtist,
+      tattooDate: form.tattooDate,
+      // Backend expects booleans and optional lists in camelCase
+      signed: Boolean(form.agree),
+      dateSigned: new Date().toISOString(),
+      agree: Boolean(form.agree),
       ...healthInfo,
     };
 
@@ -236,12 +235,12 @@ export async function submitPiercingConsentForm(form, setLoading, setError) {
     // Step 2: Create consent form payload
     const healthInfo = createHealthInfo(form);
     const payload = {
-      customer_id: customerId,
-      piercing_type: form.piercingType,
-      piercing_subtype: form.piercingSubtype,
-      piercing_artist: form.piercingArtist,
-      piercing_date: form.piercingDate,
-      agree: !!form.agree,
+      customerId: Number(customerId) || undefined,
+      piercingType: form.piercingType,
+      piercingSubtype: form.piercingSubtype,
+      piercingArtist: form.piercingArtist,
+      piercingDate: form.piercingDate,
+      agree: Boolean(form.agree),
       ...healthInfo,
     };
 

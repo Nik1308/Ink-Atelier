@@ -25,19 +25,19 @@ const LedgerTab = ({ payments, expenses = [], customers = [] }) => {
     const { startDate, endDate } = dateRange[0];
     return payments
       .filter(p => {
-        if (!p.payment_date) return false;
-        const d = new Date(p.payment_date);
+        if (!p.paymentDate) return false;
+        const d = new Date(p.paymentDate);
         return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startDate) || isSameDay(d, endDate);
       })
-      .sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date));
+      .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
   }, [payments, dateRange]);
 
   // Filter expenses by selected range
   const filteredExpenses = useMemo(() => {
     const { startDate, endDate } = dateRange[0];
     return (expenses || []).filter(e => {
-      if (!e.expense_date) return false;
-      const d = new Date(e.expense_date);
+      if (!e.expenseDate) return false;
+      const d = new Date(e.expenseDate);
       return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startDate) || isSameDay(d, endDate);
     });
   }, [expenses, dateRange]);
@@ -140,11 +140,11 @@ const LedgerTab = ({ payments, expenses = [], customers = [] }) => {
           <tbody className="divide-y divide-gray-100">
             {paginatedPayments.map((p) => (
               <tr key={p.id}>
-                <td className="w-1/5 px-4 py-3 text-left">{getCustomerName(customers, p.customer_id)}</td>
-                <td className="w-1/5 px-4 py-3 text-center">{getCustomerPhone(customers, p.customer_id)}</td>
-                <td className="w-1/5 px-4 py-3 text-center">{p.payment_date ? new Date(p.payment_date).toLocaleDateString() : 'Unknown'}</td>
+                <td className="w-1/5 px-4 py-3 text-left">{getCustomerName(customers, p.customerId)}</td>
+                <td className="w-1/5 px-4 py-3 text-center">{getCustomerPhone(customers, p.customerId)}</td>
+                <td className="w-1/5 px-4 py-3 text-center">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : 'Unknown'}</td>
                 <td className="w-1/5 px-4 py-3 text-center">₹{parseFloat(p.amount).toLocaleString()}</td>
-                {/* <td className="w-1/6 px-4 py-3 text-center">{p.payment_type}</td> */}
+                {/* <td className="w-1/6 px-4 py-3 text-center">{p.paymentType}</td> */}
                 <td className="w-1/5 px-4 py-3 text-right">{SERVICE_LABELS[p.service] || p.service || 'N/A'}</td>
               </tr>
             ))}
@@ -191,10 +191,10 @@ const LedgerTab = ({ payments, expenses = [], customers = [] }) => {
           <tbody className="divide-y divide-gray-100">
             {filteredExpenses.map((e) => (
               <tr key={e.id}>
-                <td className="w-1/4 px-4 py-3 text-left">{e.expense_date ? new Date(e.expense_date).toLocaleDateString() : 'Unknown'}</td>
+                <td className="w-1/4 px-4 py-3 text-left">{e.expenseDate ? new Date(e.expenseDate).toLocaleDateString() : 'Unknown'}</td>
                 <td className="w-1/4 px-4 py-3 text-center">₹{parseFloat(e.amount).toLocaleString()}</td>
                 <td className="w-1/4 px-4 py-3 text-center">{e.purpose}</td>
-                <td className="w-1/4 px-4 py-3 text-center">{e.payment_method}</td>
+                <td className="w-1/4 px-4 py-3 text-center">{e.paymentMethod}</td>
               </tr>
             ))}
             {filteredExpenses.length === 0 && (

@@ -32,17 +32,17 @@ const ConsentFormDetails = ({ form }) => {
             <>
               <div>
                 <span className="font-medium text-gray-600">Tattoo Location:</span>
-                <span className="ml-2">{form.tattoo_location || 'Not provided'}</span>
+                <span className="ml-2">{form.tattooLocation || 'Not provided'}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-600">Tattoo Artist:</span>
-                <span className="ml-2">{form.tattoo_artist || 'Not provided'}</span>
+                <span className="ml-2">{form.tattooArtist || 'Not provided'}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-600">Tattoo Date:</span>
-                <span className="ml-2">{formatDate(form.tattoo_date)}</span>
+                <span className="ml-2">{formatDate(form.tattooDate)}</span>
               </div>
-              {form.tattoo_design && (
+              {form.tattooDesign && (
                 <div>
                   <span className="font-medium text-gray-600">Design Uploaded:</span>
                   <span className="ml-2">Yes</span>
@@ -53,19 +53,19 @@ const ConsentFormDetails = ({ form }) => {
             <>
               <div>
                 <span className="font-medium text-gray-600">Piercing Type:</span>
-                <span className="ml-2">{form.piercing_type || 'Not provided'}</span>
+                <span className="ml-2">{form.piercingType || 'Not provided'}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-600">Piercing Subtype:</span>
-                <span className="ml-2">{form.piercing_subtype || 'Not provided'}</span>
+                <span className="ml-2">{form.piercingSubtype || 'Not provided'}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-600">Piercing Artist:</span>
-                <span className="ml-2">{form.piercing_artist || 'Not provided'}</span>
+                <span className="ml-2">{form.piercingArtist || 'Not provided'}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-600">Piercing Date:</span>
-                <span className="ml-2">{formatDate(form.piercing_date)}</span>
+                <span className="ml-2">{formatDate(form.piercingDate)}</span>
               </div>
             </>
           )}
@@ -78,43 +78,43 @@ const ConsentFormDetails = ({ form }) => {
         <div className="grid grid-cols-1 gap-4">
           <div>
             <span className="font-medium text-gray-600">Medications:</span>
-            <span className="ml-2">{formatBoolean(form.medications || form.has_medications)}</span>
+            <span className="ml-2">{formatBoolean(form.medications || form.hasMedications)}</span>
           </div>
           <div>
             <span className="font-medium text-gray-600">Allergies:</span>
-            <span className="ml-2">{formatBoolean(form.allergies || form.has_allergies)}</span>
+            <span className="ml-2">{formatBoolean(form.allergies || form.hasAllergies)}</span>
           </div>
           <div>
             <span className="font-medium text-gray-600">Medical Conditions:</span>
-            <span className="ml-2">{formatBoolean(form.medical_conditions || form.has_medical_conditions)}</span>
+            <span className="ml-2">{formatBoolean(form.medicalConditions || form.hasMedicalConditions)}</span>
           </div>
           <div>
             <span className="font-medium text-gray-600">Alcohol/Drugs (24h):</span>
-            <span className="ml-2">{formatBoolean(form.alcohol_drugs)}</span>
+            <span className="ml-2">{formatBoolean(form.alcoholDrugs)}</span>
           </div>
           <div>
             <span className="font-medium text-gray-600">Pregnant/Nursing:</span>
-            <span className="ml-2">{formatBoolean(form.pregnant_nursing)}</span>
+            <span className="ml-2">{formatBoolean(form.pregnantNursing)}</span>
           </div>
         </div>
 
         {/* Detailed Lists */}
-        {(form.medications_list || form.medicationsList) && (
+        {(form.medicationsList || form.medications_list) && (
           <div className="mt-3">
             <span className="font-medium text-gray-600">Medications List:</span>
-            <p className="mt-1 text-sm bg-gray-50 p-2 rounded">{form.medications_list || form.medicationsList}</p>
+            <p className="mt-1 text-sm bg-gray-50 p-2 rounded">{form.medicationsList || form.medications_list}</p>
           </div>
         )}
-        {(form.allergies_list || form.allergiesList) && (
+        {(form.allergiesList || form.allergies_list) && (
           <div className="mt-3">
             <span className="font-medium text-gray-600">Allergies List:</span>
-            <p className="mt-1 text-sm bg-gray-50 p-2 rounded">{form.allergies_list || form.allergiesList}</p>
+            <p className="mt-1 text-sm bg-gray-50 p-2 rounded">{form.allergiesList || form.allergies_list}</p>
           </div>
         )}
-        {(form.medical_conditions_list || form.medicalConditionsList) && (
+        {(form.medicalConditionsList || form.medical_conditions_list) && (
           <div className="mt-3">
             <span className="font-medium text-gray-600">Medical Conditions List:</span>
-            <p className="mt-1 text-sm bg-gray-50 p-2 rounded">{form.medical_conditions_list || form.medicalConditionsList}</p>
+            <p className="mt-1 text-sm bg-gray-50 p-2 rounded">{form.medicalConditionsList || form.medical_conditions_list}</p>
           </div>
         )}
       </div>
@@ -129,7 +129,7 @@ const ConsentFormDetails = ({ form }) => {
           </div>
           <div>
             <span className="font-medium text-gray-600">Date Signed:</span>
-            <span className="ml-2">{formatDate(form.date_signed)}</span>
+            <span className="ml-2">{formatDate(form.dateSigned || form.date_signed)}</span>
           </div>
           <div>
             <span className="font-medium text-gray-600">Form ID:</span>
@@ -137,7 +137,7 @@ const ConsentFormDetails = ({ form }) => {
           </div>
           <div>
             <span className="font-medium text-gray-600">Created:</span>
-            <span className="ml-2">{formatDate(form.created_at)}</span>
+            <span className="ml-2">{formatDate(form.createdAt || form.created_at)}</span>
           </div>
         </div>
       </div>

@@ -29,7 +29,7 @@ const CustomerTable = ({ customers, getCustomerConsentForms, getCustomerPayments
               const consents = getCustomerConsentForms ? getCustomerConsentForms(customer.id) : [];
               const payments = getCustomerPayments ? getCustomerPayments(customer.id) : [];
               const lifetimeSpend = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-              const referrals = customers.filter(c => c.referred_by_customer_id === customer.id).length || 0;
+              const referrals = customers.filter(c => c.referredByCustomerId === customer.id).length || 0;
 
               return (
                 <tr key={customer.id}>

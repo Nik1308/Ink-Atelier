@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import GlassCard from './components/GlassCard';
-import { useAdminResources } from './hooks/useAdminResources';
+import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import { FiSearch, FiChevronDown, FiChevronUp, FiGift, FiUserCheck } from 'react-icons/fi';
 
 function formatDate(date) {
@@ -47,7 +47,12 @@ function chunkArray(arr, chunkSize) {
 }
 
 const CustomersTab = () => {
-  const { customers, payments, consentForms } = useAdminResources();
+  const { customers, payments, consentForms } = useLazyAdminResources({
+    enableCustomers: true,
+    enablePayments: true,
+    enableTattooConsents: true,
+    enablePiercingConsents: true,
+  });
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [expandedCustomerId, setExpandedCustomerId] = useState(null);
@@ -63,9 +68,27 @@ const CustomersTab = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Local search filtering, then sort by created_at DESC (latest first)
+  // Debug: Log data when it arrives
+  React.useEffect(() => {
+    if (customers.data) {
+      console.log('📊 Customers Data:', customers.data);
+      console.log('📊 Customers Count:', customers.data?.length);
+      console.log('📊 First Customer:', customers.data?.[0]);
+    }
+    if (customers.isLoading) {
+      console.log('⏳ Loading customers...');
+    }
+    if (customers.error) {
+      console.error('❌ Customers Error:', customers.error);
+    }
+  }, [customers.data, customers.isLoading, customers.error]);
+
+  // Local search filtering, then sort by createdAt DESC (latest first)
   const filtered = useMemo(() => {
-    if (!customers.data) return [];
+    if (!customers.data) {
+      console.log('⚠️ No customers data available');
+      return [];
+    }
     const q = search.toLowerCase();
     let arr = customers.data;
     if (q) {
@@ -74,7 +97,9 @@ const CustomersTab = () => {
         (c.phone && c.phone.includes(search))
       );
     }
-    return arr.sort((a, b) => (new Date(b.created_at || 0)) - (new Date(a.created_at || 0)));
+    const sorted = arr.sort((a, b) => (new Date(b.createdAt || 0)) - (new Date(a.createdAt || 0)));
+    console.log('✅ Filtered customers:', sorted.length);
+    return sorted;
   }, [customers.data, search]);
 
   // Pagination
@@ -156,14 +181,14 @@ const CustomersTab = () => {
                       <div className="text-2xl font-extrabold text-white mb-1 truncate max-w-full">{cust.name || <span className="italic text-slate-200">Unknown</span>}</div>
                       <div className="text-lg text-sky-200 font-mono">{cust.phone || '-'}</div>
                       {cust.email && <div className="mt-1 text-base text-slate-400 truncate">{cust.email}</div>}
-                      <div className="mt-3 text-xs text-white/50">Created: {formatDate(cust.created_at)}</div>
+                      <div className="mt-3 text-xs text-white/50">Created: {formatDate(cust.createdAt)}</div>
                     </div>
                     {/* Right: Payments */}
                     <div className="flex flex-col items-start md:items-end gap-2 min-w-[210px] w-full md:w-auto">
                       <div className="text-base font-semibold text-sky-100 mb-1 flex items-center gap-1"><FiUserCheck />Payments</div>
                       <div className="flex flex-row gap-5 mb-1">
-                        <div className="font-semibold text-sky-200 text-lg">Total: <span className="font-bold ml-1">{allPayments.filter(p => p.customer_id === cust.id).length}</span></div>
-                        <div className="font-semibold text-sky-200 text-lg">Lifetime Spend: <span className="font-bold ml-1">₹{allPayments.filter(p => p.customer_id === cust.id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0).toLocaleString()}</span></div>
+                        <div className="font-semibold text-sky-200 text-lg">Total: <span className="font-bold ml-1">{allPayments.filter(p => p.customerId === cust.id).length}</span></div>
+                        <div className="font-semibold text-sky-200 text-lg">Lifetime Spend: <span className="font-bold ml-1">₹{allPayments.filter(p => p.customerId === cust.id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0).toLocaleString()}</span></div>
                       </div>
                     </div>
                   </div>
@@ -174,31 +199,31 @@ const CustomersTab = () => {
                     </div>
                     {consentForms
                       ? (() => {
-                        const forms = consentForms.filter(f => f.customer_id === cust.id);
+                        const forms = consentForms.filter(f => f.customerId === cust.id);
                         if (!forms.length) return (<div className="text-sm text-white/60 italic mb-2">No services found.</div>);
                         return (
                           <div className="flex flex-col gap-3">
                             {forms.map((form, i) => (
-                              <div key={form.id || form.created_at || i} className="rounded-lg bg-black/10 border border-white/10 p-3">
+                              <div key={form.id || form.createdAt || i} className="rounded-lg bg-black/10 border border-white/10 p-3">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2 gap-x-5 w-full items-center">
                                   {/* Col 1: badge + date */}
                                   <div className="flex flex-col items-start md:items-center gap-1">
                                     <span className={`text-xs font-bold px-3 py-1 rounded-full mb-1 ${form.type === 'tattoo' ? 'bg-blue-900 text-sky-200' : 'bg-pink-900 text-pink-200'}`}>{form.type === 'tattoo' ? 'Tattoo' : 'Piercing'}</span>
                                     <span className="text-white/80 text-sm font-medium">{form.type === 'tattoo'
-                                      ? (form.tattoo_date ? formatDate(form.tattoo_date) : form.created_at ? formatDate(form.created_at) : '—')
-                                      : (form.piercing_date ? formatDate(form.piercing_date) : form.created_at ? formatDate(form.created_at) : '—')}</span>
+                                      ? (form.tattooDate ? formatDate(form.tattooDate) : form.createdAt ? formatDate(form.createdAt) : '—')
+                                      : (form.piercingDate ? formatDate(form.piercingDate) : form.createdAt ? formatDate(form.createdAt) : '—')}</span>
                                   </div>
                                   {/* Col 2: Type + Subtype */}
                                   <div className="flex flex-col items-start md:items-center gap-1">
-                                    <span className={`text-sm font-semibold ${form.type === 'tattoo' ? 'text-sky-200' : 'text-pink-200'}`}>Type: <span className="text-white/90 font-bold">{form.type === 'tattoo' ? (form.tattoo_location || '—') : (form.piercing_type || '—')}</span></span>
-                                    {form.type === 'piercing' && form.piercing_subtype && (
-                                      <span className="text-xs text-pink-200">Sub-type: <span className="text-white/90 font-semibold">{form.piercing_subtype}</span></span>
+                                    <span className={`text-sm font-semibold ${form.type === 'tattoo' ? 'text-sky-200' : 'text-pink-200'}`}>Type: <span className="text-white/90 font-bold">{form.type === 'tattoo' ? (form.tattooLocation || '—') : (form.piercingType || '—')}</span></span>
+                                    {form.type === 'piercing' && form.piercingSubtype && (
+                                      <span className="text-xs text-pink-200">Sub-type: <span className="text-white/90 font-semibold">{form.piercingSubtype}</span></span>
                                     )}
                                   </div>
                                   {/* Col 3: Artist */}
                                   <div className="flex flex-col items-start md:items-center gap-1">
                                     <span className="text-sm font-semibold text-amber-300">Artist:</span>
-                                    <span className="text-sm text-white/90 font-semibold">{form.type === 'tattoo' ? (form.tattoo_artist || '—') : (form.piercing_artist || '—')}</span>
+                                    <span className="text-sm text-white/90 font-semibold">{form.type === 'tattoo' ? (form.tattooArtist || '—') : (form.piercingArtist || '—')}</span>
                                   </div>
                                 </div>
                               </div>
@@ -212,17 +237,17 @@ const CustomersTab = () => {
                   <div className="border-t border-white/10 mt-6 pt-4 w-full">
                     <div className="text-base font-semibold text-sky-100 mb-1 flex items-center gap-1"><FiGift />Referral</div>
                     <div className="pl-1 text-white/80">
-                      {cust.referred_by_customer_id && customersArr.find(c => c.id === cust.referred_by_customer_id) ? (
-                        <div className="mb-1">Referred by: <span className="font-semibold text-sky-300">{(customersArr.find(c => c.id === cust.referred_by_customer_id).name || customersArr.find(c => c.id === cust.referred_by_customer_id).phone)}</span></div>
+                      {cust.referredByCustomerId && customersArr.find(c => c.id === cust.referredByCustomerId) ? (
+                        <div className="mb-1">Referred by: <span className="font-semibold text-sky-300">{(customersArr.find(c => c.id === cust.referredByCustomerId).name || customersArr.find(c => c.id === cust.referredByCustomerId).phone)}</span></div>
                       ) : (<div className="mb-1">Not referred by anyone</div>)}
-                      {customersArr.filter(c => c.referred_by_customer_id === cust.id).length > 0 ? (
+                      {customersArr.filter(c => c.referredByCustomerId === cust.id).length > 0 ? (
                         <div>
-                          <div className="mb-1">Has referred {customersArr.filter(c => c.referred_by_customer_id === cust.id).length} {customersArr.filter(c => c.referred_by_customer_id === cust.id).length === 1 ? 'customer' : 'customers'}:</div>
+                          <div className="mb-1">Has referred {customersArr.filter(c => c.referredByCustomerId === cust.id).length} {customersArr.filter(c => c.referredByCustomerId === cust.id).length === 1 ? 'customer' : 'customers'}:</div>
                           <div className="space-y-1 pl-3">
-                            {customersArr.filter(c => c.referred_by_customer_id === cust.id).map(ref => (
+                            {customersArr.filter(c => c.referredByCustomerId === cust.id).map(ref => (
                               <div key={ref.id} className="text-xs text-white/80 flex gap-3 items-center">
                                 <span className="font-medium">{ref.name || ref.phone}</span>
-                                <span className="opacity-70">({formatDate(ref.created_at)})</span>
+                                <span className="opacity-70">({formatDate(ref.createdAt)})</span>
                               </div>
                             ))}
                           </div>
@@ -257,7 +282,7 @@ const CustomersTab = () => {
                   <FiChevronDown />
                 </button>
               </div>
-              <div className="mt-3 text-xs text-white/50">Created: {formatDate(cust.created_at)}</div>
+              <div className="mt-3 text-xs text-white/50">Created: {formatDate(cust.createdAt)}</div>
             </GlassCard>
           ));
         })}

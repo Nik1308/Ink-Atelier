@@ -29,11 +29,11 @@ const UpcomingBookingTab = ({ bookings, customers }) => {
   });
 
   const columns = [
-    { header: 'Customer Name', accessor: 'customer_id', cellClassName: 'text-left', render: (b) => getCustomerName(customers, b.customer_id) },
-    { header: 'Customer Phone', accessor: 'customer_phone', cellClassName: 'text-center', render: (b) => getCustomerPhone(customers, b.customer_id) },
-    { header: 'Appointment Date', accessor: 'appointment_date', cellClassName: 'text-center', render: (b) => b.appointment_date ? new Date(b.appointment_date).toLocaleDateString() : 'N/A' },
-    { header: 'Advance Amount', accessor: 'advance_amount', cellClassName: 'text-center', render: (b) => b.advance_amount ? `₹${b.advance_amount}` : '—' },
-    { header: 'Due Amount', accessor: 'due_amount', cellClassName: 'text-center', render: (b) => b.due_amount ? `₹${b.due_amount}` : '—' },
+    { header: 'Customer Name', accessor: 'customerId', cellClassName: 'text-left', render: (b) => getCustomerName(customers, b.customerId) },
+    { header: 'Customer Phone', accessor: 'customerPhone', cellClassName: 'text-center', render: (b) => getCustomerPhone(customers, b.customerId) },
+    { header: 'Appointment Date', accessor: 'appointmentDate', cellClassName: 'text-center', render: (b) => b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString() : 'N/A' },
+    { header: 'Advance Amount', accessor: 'advanceAmount', cellClassName: 'text-center', render: (b) => b.advanceAmount ? `₹${b.advanceAmount}` : '—' },
+    { header: 'Due Amount', accessor: 'dueAmount', cellClassName: 'text-center', render: (b) => b.dueAmount ? `₹${b.dueAmount}` : '—' },
     { header: 'Service', accessor: 'service', cellClassName: 'text-center', render: (b) => b.service || '—' },
     {
       header: 'Fulfillment',
