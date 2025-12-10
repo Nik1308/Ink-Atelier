@@ -19,6 +19,20 @@ function formatDate(date) {
   if (!date) return '-';
   return new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
 }
+function formatDateForInput(date) {
+  if (!date) return '';
+  // If already in YYYY-MM-DD format, return as is
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
+  }
+  // Convert ISO date string to YYYY-MM-DD format
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return '';
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 function getPaginationWindow(current, total) {
   const window = [];
   if (total <= 7) {
@@ -129,7 +143,8 @@ const ConsentFormsTab = () => {
     const service = form.type === 'tattoo'
       ? `tattoo`
       : `piercing`;
-    const date = form.tattooDate || form.piercingDate || new Date().toISOString().split('T')[0];
+    const dateFromForm = form.tattooDate || form.piercingDate;
+    const date = dateFromForm ? formatDateForInput(dateFromForm) : new Date().toISOString().split('T')[0];
     setModalForm({
       open: true,
       form: {
@@ -252,7 +267,9 @@ const ConsentFormsTab = () => {
             {pageForms.map((form, i) => {
               const isTattoo = form.type === 'tattoo';
               const customer = customers?.data?.find(c => c.id === form.customerId) || {};
-              const uniqueId = form.id || form.createdAt || i;
+              // Ensure unique ID: include type and id, or combine type, createdAt with index
+              const formType = form.type || 'unknown';
+              const uniqueId = form.id ? `${formType}-${form.id}` : `${formType}-${form.createdAt || 'no-date'}-${i}`;
               const expanded = expandedFormId === uniqueId;
               const health_flag =
                 form.hasAllergies === true || (form.allergies && String(form.allergies).toLowerCase() === 'yes') || fieldTruthy(form.allergiesList) ||
