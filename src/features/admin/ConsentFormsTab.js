@@ -33,6 +33,13 @@ function formatDateForInput(date) {
   const day = String(dateObj.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+function getFormUniqueId(form, index = null) {
+  const formType = form.type || 'unknown';
+  if (form.id) {
+    return `${formType}-${form.id}`;
+  }
+  return `${formType}-${form.createdAt || 'no-date'}${index !== null ? `-${index}` : ''}`;
+}
 function getPaginationWindow(current, total) {
   const window = [];
   if (total <= 7) {
@@ -212,9 +219,14 @@ const ConsentFormsTab = () => {
             body: JSON.stringify({ payment: true })
           });
         }
-        setPatchedIds((ids) => ({...ids, [form.id]: true}));
+        const formUniqueId = getFormUniqueId(form);
+        setPatchedIds((ids) => ({...ids, [formUniqueId]: true}));
       }
       setModalForm(mf => ({ ...mf, loading: false, error: null, success: 'Payment recorded successfully!' }));
+      // Close modal after 1.5 seconds to show success message
+      setTimeout(() => {
+        closePaymentModal();
+      }, 1500);
     } catch (err) {
       setModalForm(mf => ({ ...mf, loading: false, error: 'Failed to record payment. Try again.' }));
     }
@@ -268,8 +280,7 @@ const ConsentFormsTab = () => {
               const isTattoo = form.type === 'tattoo';
               const customer = customers?.data?.find(c => c.id === form.customerId) || {};
               // Ensure unique ID: include type and id, or combine type, createdAt with index
-              const formType = form.type || 'unknown';
-              const uniqueId = form.id ? `${formType}-${form.id}` : `${formType}-${form.createdAt || 'no-date'}-${i}`;
+              const uniqueId = getFormUniqueId(form, i);
               const expanded = expandedFormId === uniqueId;
               const health_flag =
                 form.hasAllergies === true || (form.allergies && String(form.allergies).toLowerCase() === 'yes') || fieldTruthy(form.allergiesList) ||
@@ -292,11 +303,11 @@ const ConsentFormsTab = () => {
                   <td className="px-2 text-center">
                     <button 
                       type="button" 
-                      className={`px-4 py-1.5 rounded-lg font-semibold border-none bg-white text-black text-xs tracking-tight shadow hover:bg-gray-100 focus:outline-none ${((form.payment || patchedIds[form.id]) ? 'opacity-50 cursor-not-allowed' : '')}`} 
-                      onClick={e => { if (!form.payment && !patchedIds[form.id]) { e.stopPropagation(); openPaymentModal(form, customer); } }}
-                      disabled={form.payment === true || patchedIds[form.id] === true}
+                      className={`px-4 py-1.5 rounded-lg font-semibold border-none bg-white text-black text-xs tracking-tight shadow hover:bg-gray-100 focus:outline-none ${((form.payment || patchedIds[uniqueId]) ? 'opacity-50 cursor-not-allowed' : '')}`} 
+                      onClick={e => { if (!form.payment && !patchedIds[uniqueId]) { e.stopPropagation(); openPaymentModal(form, customer); } }}
+                      disabled={form.payment === true || patchedIds[uniqueId] === true}
                     >
-                      {form.payment === true || patchedIds[form.id] === true ? 'Payment Recorded' : 'Record Payment'}
+                      {form.payment === true || patchedIds[uniqueId] === true ? 'Payment Recorded' : 'Record Payment'}
                     </button>
                   </td>
                   <td className="px-2 text-right">
