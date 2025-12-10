@@ -8,12 +8,14 @@ import FormField from '../forms/components/FormField';
 import LoadingSpinner from '../common/ui/LoadingSpinner';
 import ErrorMessage from '../common/ui/ErrorMessage';
 import DateRangeSelector from '../common/ui/DateRangeSelector';
-import { useAdminResources } from './hooks/useAdminResources';
+import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import usePagination from '../common/hooks/usePagination';
 import { startOfDay, endOfDay, isWithinInterval, isSameDay } from 'date-fns';
 
 const LeadsTab = () => {
-  const { leads } = useAdminResources();
+  const { leads } = useLazyAdminResources({
+    enableLeads: true,
+  });
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -128,7 +130,7 @@ const LeadsTab = () => {
     }
   };
 
-  // Filter and sort leads by created_at and filters
+  // Filter and sort leads by createdAt and filters
   const filteredAndSortedLeads = useMemo(() => {
     if (!leads?.data) return [];
     const { startDate, endDate } = dateRange[0];
@@ -136,8 +138,8 @@ const LeadsTab = () => {
     return leads.data
       .filter((lead) => {
         // Date filter
-        if (!lead.created_at) return false;
-        const leadDate = new Date(lead.created_at);
+        if (!lead.createdAt) return false;
+        const leadDate = new Date(lead.createdAt);
         const dateMatch = (
           isWithinInterval(leadDate, { start: startOfDay(startDate), end: endOfDay(endDate) }) ||
           isSameDay(leadDate, startDate) ||
@@ -168,8 +170,8 @@ const LeadsTab = () => {
         return true;
       })
       .sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
   }, [leads?.data, dateRange, filters]);
@@ -488,8 +490,8 @@ const LeadsTab = () => {
                     {lead.service || '—'}
                   </td>
                   <td className="px-4 py-3 text-left text-white/80 text-base">
-                    {lead.service_date
-                      ? new Date(lead.service_date).toLocaleDateString('en-IN', {
+                    {lead.serviceDate
+                      ? new Date(lead.serviceDate).toLocaleDateString('en-IN', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',

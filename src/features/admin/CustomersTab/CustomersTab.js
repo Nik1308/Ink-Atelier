@@ -27,10 +27,10 @@ const CustomersTab = ({ customers, consentForms, payments, loading, error, onRef
     searchQuery
   );
 
-  // Sort customers by created_at descending (newest first)
+  // Sort customers by createdAt descending (newest first)
   const sortedFilteredCustomers = [...filteredCustomers].sort((a, b) => {
-    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return dateB - dateA;
   });
 

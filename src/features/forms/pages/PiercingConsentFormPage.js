@@ -73,11 +73,11 @@ const PiercingConsentFormPage = () => {
           setForm((f) => ({
             ...f,
             name: existingCustomer.name || "",
-            dob: existingCustomer.date_of_birth || "",
+            dob: existingCustomer.dateOfBirth || "",
             address: existingCustomer.address || "",
             email: existingCustomer.email || "",
             isExistingCustomer: true,
-            heardAboutUs: existingCustomer.heard_about_us || ""
+            heardAboutUs: existingCustomer.heardAboutUs || ""
           }));
         } else {
           setForm((f) => ({

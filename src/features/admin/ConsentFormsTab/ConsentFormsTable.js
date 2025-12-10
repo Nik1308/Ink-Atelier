@@ -16,15 +16,15 @@ const ConsentFormsTable = ({ forms, customers = [], onDownload, downloading, onV
     },
     {
       header: 'Customer Name',
-      accessor: 'customer_id',
+      accessor: 'customerId',
       cellClassName: 'text-center',
-      render: (f) => getCustomerName(customers, f.customer_id),
+      render: (f) => getCustomerName(customers, f.customerId),
     },
     {
       header: 'Customer Phone',
-      accessor: 'customer_phone',
+      accessor: 'customerPhone',
       cellClassName: 'text-center',
-      render: (f) => getCustomerPhone(customers, f.customer_id),
+      render: (f) => getCustomerPhone(customers, f.customerId),
     },
     {
       header: 'Date',
@@ -32,8 +32,8 @@ const ConsentFormsTable = ({ forms, customers = [], onDownload, downloading, onV
       cellClassName: 'text-center',
       render: (f) =>
         f.type === 'tattoo'
-          ? (f.tattoo_date ? new Date(f.tattoo_date).toLocaleDateString() : 'N/A')
-          : (f.piercing_date ? new Date(f.piercing_date).toLocaleDateString() : 'N/A'),
+          ? (f.tattooDate ? new Date(f.tattooDate).toLocaleDateString() : 'N/A')
+          : (f.piercingDate ? new Date(f.piercingDate).toLocaleDateString() : 'N/A'),
     },
     {
       header: 'Actions',

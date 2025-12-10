@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useAdminResources } from './hooks/useAdminResources';
+import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import GlassCard from './components/GlassCard';
 import DateRangeSelector from '../common/ui/DateRangeSelector';
 import { PAYMENT_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL } from '../../utils/apiUrls';
@@ -60,7 +60,11 @@ function getColumns() {
   return 3;
 }
 const ConsentFormsTab = () => {
-  const { consentForms, customers } = useAdminResources();
+  const { consentForms, customers } = useLazyAdminResources({
+    enableTattooConsents: true,
+    enablePiercingConsents: true,
+    enableCustomers: true,
+  });
   const [dateRange, setDateRange] = useState([
     { startDate: startOfDay(new Date()), endDate: endOfDay(new Date()), key: 'selection' }
   ]);
@@ -101,7 +105,7 @@ const ConsentFormsTab = () => {
       let correctType = formType === 'all' || f.type === formType;
       if (formType === 'medical') correctType = filterByHealth(f);
       if (!correctType) return false;
-      const d = f.created_at; // ONLY use created_at for filtering now
+      const d = f.createdAt; // ONLY use createdAt for filtering now
       if (!d) return false;
       const dateObj = new Date(d);
       return (
@@ -125,7 +129,7 @@ const ConsentFormsTab = () => {
     const service = form.type === 'tattoo'
       ? `tattoo`
       : `piercing`;
-    const date = form.tattoo_date || form.piercing_date || new Date().toISOString().split('T')[0];
+    const date = form.tattooDate || form.piercingDate || new Date().toISOString().split('T')[0];
     setModalForm({
       open: true,
       form: {
@@ -139,7 +143,7 @@ const ConsentFormsTab = () => {
       error: null,
       loading: false,
       success: null,
-      c_id: customer?.id || form.customer_id,
+      c_id: customer?.id || form.customerId,
       targetForm: form,
     });
   };
@@ -247,15 +251,15 @@ const ConsentFormsTab = () => {
           <tbody>
             {pageForms.map((form, i) => {
               const isTattoo = form.type === 'tattoo';
-              const customer = customers?.data?.find(c => c.id === form.customer_id) || {};
-              const uniqueId = form.id || form.created_at || i;
+              const customer = customers?.data?.find(c => c.id === form.customerId) || {};
+              const uniqueId = form.id || form.createdAt || i;
               const expanded = expandedFormId === uniqueId;
               const health_flag =
-                form.has_allergies === true || (form.allergies && String(form.allergies).toLowerCase() === 'yes') || fieldTruthy(form.allergies_list) ||
-                form.has_medications === true || (form.medications && String(form.medications).toLowerCase() === 'yes') || fieldTruthy(form.medications_list) ||
-                form.has_medical_conditions === true || (form.medical_conditions && String(form.medical_conditions).toLowerCase() === 'yes') || fieldTruthy(form.medical_conditions_list) ||
-                form.alcohol_drugs === true || (typeof form.alcohol_drugs === 'string' && String(form.alcohol_drugs).toLowerCase() === 'yes') ||
-                form.pregnant_nursing === true || (typeof form.pregnant_nursing === 'string' && String(form.pregnant_nursing).toLowerCase() === 'yes');
+                form.hasAllergies === true || (form.allergies && String(form.allergies).toLowerCase() === 'yes') || fieldTruthy(form.allergiesList) ||
+                form.hasMedications === true || (form.medications && String(form.medications).toLowerCase() === 'yes') || fieldTruthy(form.medicationsList) ||
+                form.hasMedicalConditions === true || (form.medicalConditions && String(form.medicalConditions).toLowerCase() === 'yes') || fieldTruthy(form.medicalConditionsList) ||
+                form.alcoholDrugs === true || (typeof form.alcoholDrugs === 'string' && String(form.alcoholDrugs).toLowerCase() === 'yes') ||
+                form.pregnantNursing === true || (typeof form.pregnantNursing === 'string' && String(form.pregnantNursing).toLowerCase() === 'yes');
               return <>
                 <tr key={uniqueId} className={`backdrop-blur-lg bg-white/5 border-b border-white/15 hover:bg-white/10 transition ${expanded ? 'ring-2 ring-sky-400' : ''}`} style={{ verticalAlign: 'middle' }}>
                   <td className="px-4 py-3">
@@ -266,8 +270,8 @@ const ConsentFormsTab = () => {
                   </td>
                   <td className="px-2 py-3 font-semibold text-white text-base whitespace-nowrap">{customer.name || 'Unknown'}</td>
                   <td className="px-2 py-3 font-mono text-sky-200 text-base whitespace-nowrap">{(customer.phone || '').replace(/^\+91/, '')}</td>
-                  <td className="px-2 py-3 whitespace-nowrap text-base text-white/80">{isTattoo ? (form.tattoo_date ? formatDate(form.tattoo_date) : form.created_at ? formatDate(form.created_at) : '—') : (form.piercing_date ? formatDate(form.piercing_date) : form.created_at ? formatDate(form.created_at) : '—')}</td>
-                  <td className="px-2 py-3 whitespace-nowrap text-sm text-white/90">{isTattoo ? (form.tattoo_location || '-') : (form.piercing_type || '-')}</td>
+                  <td className="px-2 py-3 whitespace-nowrap text-base text-white/80">{isTattoo ? (form.tattooDate ? formatDate(form.tattooDate) : form.createdAt ? formatDate(form.createdAt) : '—') : (form.piercingDate ? formatDate(form.piercingDate) : form.createdAt ? formatDate(form.createdAt) : '—')}</td>
+                  <td className="px-2 py-3 whitespace-nowrap text-sm text-white/90">{isTattoo ? (form.tattooLocation || '-') : (form.piercingType || '-')}</td>
                   <td className="px-2 text-center">
                     <button 
                       type="button" 
@@ -292,23 +296,23 @@ const ConsentFormsTab = () => {
                           <>
                             <div className="mb-2 text-lg font-semibold text-sky-400">Tattoo Consent Details</div>
                             <div className="flex flex-col gap-2 text-white/90 text-base">
-                              {form.tattoo_location && <span><span className="font-semibold text-sky-200">Location:</span> {form.tattoo_location}</span>}
-                              {form.tattoo_description && <span><span className="font-semibold text-sky-200">Description:</span> {form.tattoo_description}</span>}
-                              {form.tattoo_artist && <span><span className="font-semibold text-amber-300">Artist:</span> {form.tattoo_artist}</span>}
-                              {form.tattoo_size && <span><span className="font-semibold text-sky-200">Size:</span> {form.tattoo_size}</span>}
-                              {form.signed_by && <span><span className="font-semibold text-cyan-300">Signed by:</span> {form.signed_by}</span>}
+                              {form.tattooLocation && <span><span className="font-semibold text-sky-200">Location:</span> {form.tattooLocation}</span>}
+                              {form.tattooDescription && <span><span className="font-semibold text-sky-200">Description:</span> {form.tattooDescription}</span>}
+                              {form.tattooArtist && <span><span className="font-semibold text-amber-300">Artist:</span> {form.tattooArtist}</span>}
+                              {form.tattooSize && <span><span className="font-semibold text-sky-200">Size:</span> {form.tattooSize}</span>}
+                              {form.signedBy && <span><span className="font-semibold text-cyan-300">Signed by:</span> {form.signedBy}</span>}
                             </div>
                           </>
                         ) : (
                           <>
                             <div className="mb-2 text-lg font-semibold text-pink-300">Piercing Consent Details</div>
                             <div className="flex flex-col gap-2 text-white/90 text-base">
-                              {form.piercing_type && <span><span className="font-semibold text-pink-200">Type:</span> {form.piercing_type}</span>}
-                              {form.piercing_subtype && <span><span className="font-semibold text-pink-200">Sub-type:</span> {form.piercing_subtype}</span>}
-                              {form.piercing_anatomy && <span><span className="font-semibold text-pink-200">Anatomy:</span> {form.piercing_anatomy}</span>}
-                              {form.piercing_description && <span><span className="font-semibold text-pink-200">Description:</span> {form.piercing_description}</span>}
-                              {form.piercing_artist && <span><span className="font-semibold text-amber-300">Artist:</span> {form.piercing_artist}</span>}
-                              {form.signed_by && <span><span className="font-semibold text-cyan-300">Signed by:</span> {form.signed_by}</span>}
+                              {form.piercingType && <span><span className="font-semibold text-pink-200">Type:</span> {form.piercingType}</span>}
+                              {form.piercingSubtype && <span><span className="font-semibold text-pink-200">Sub-type:</span> {form.piercingSubtype}</span>}
+                              {form.piercingAnatomy && <span><span className="font-semibold text-pink-200">Anatomy:</span> {form.piercingAnatomy}</span>}
+                              {form.piercingDescription && <span><span className="font-semibold text-pink-200">Description:</span> {form.piercingDescription}</span>}
+                              {form.piercingArtist && <span><span className="font-semibold text-amber-300">Artist:</span> {form.piercingArtist}</span>}
+                              {form.signedBy && <span><span className="font-semibold text-cyan-300">Signed by:</span> {form.signedBy}</span>}
                             </div>
                           </>
                         )}

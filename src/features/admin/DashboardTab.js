@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import GlassCard from './components/GlassCard';
 import DateRangeSelector from '../../features/common/ui/DateRangeSelector';
 import { startOfDay, endOfDay, isWithinInterval, isSameDay, addDays, subMonths, format, differenceInDays, startOfMonth, endOfMonth } from 'date-fns';
-import { useAdminResources } from './hooks/useAdminResources';
+import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Line, ResponsiveContainer, Legend } from 'recharts';
 import { Tooltip as RechartsTooltip } from 'recharts';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
@@ -62,7 +62,11 @@ const DashboardTab = () => {
   const [expenseCardExpanded, setExpenseCardExpanded] = useState(false);
   const [expensesPage, setExpensesPage] = useState(1);
 
-  const { payments: paymentsQuery, expenses: expensesQuery } = useAdminResources();
+  const { payments: paymentsQuery, expenses: expensesQuery, customers: customersQuery } = useLazyAdminResources({
+    enablePayments: true,
+    enableExpenses: true,
+    enableCustomers: true,
+  });
   const { startDate, endDate } = dateRange[0];
   const rangeDays = differenceInDays(endOfDay(endDate), startOfDay(startDate)) + 1;
   const isMonthly = rangeDays > 32;
@@ -70,8 +74,8 @@ const DashboardTab = () => {
   const filteredPayments = useMemo(() => {
     if (!paymentsQuery.data) return [];
     return paymentsQuery.data.filter(p => {
-      if (!p.payment_date) return false;
-      const d = new Date(p.payment_date);
+      if (!p.paymentDate) return false;
+      const d = new Date(p.paymentDate);
       return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startOfDay(startDate)) || isSameDay(d, endOfDay(endDate));
     });
   }, [paymentsQuery.data, startDate, endDate]);
@@ -80,8 +84,8 @@ const DashboardTab = () => {
   const filteredExpenses = useMemo(() => {
     if (!expensesQuery?.data) return [];
     return expensesQuery.data.filter(e => {
-      if (!e.expense_date) return false;
-      const d = new Date(e.expense_date);
+      if (!e.expenseDate) return false;
+      const d = new Date(e.expenseDate);
       return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startOfDay(startDate)) || isSameDay(d, endOfDay(endDate));
     });
   }, [expensesQuery?.data, startDate, endDate]);
@@ -97,11 +101,11 @@ const DashboardTab = () => {
         const currDate = addDays(startOfDay(startDate), i);
         const prevDate = addDays(subMonths(startOfDay(startDate), 1), i);
         const currValue = payments.filter(p => {
-          const d = new Date(p.payment_date);
+          const d = new Date(p.paymentDate);
           return isSameDay(d, currDate) && ((p.service && labelPat.test(p.service)) || (p.service_type && labelPat.test(p.service_type)));
         }).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
         const prevValue = prevPayments.filter(p => {
-          const d = new Date(p.payment_date);
+          const d = new Date(p.paymentDate);
           return isSameDay(d, prevDate) && ((p.service && labelPat.test(p.service)) || (p.service_type && labelPat.test(p.service_type)));
         }).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
         result.push({
@@ -125,11 +129,11 @@ const DashboardTab = () => {
         const prevMonthStart = subMonths(currMonthStart, 1);
         const prevMonthEnd = endOfMonth(prevMonthStart);
         const currValue = payments.filter(p => {
-          const d = new Date(p.payment_date);
+          const d = new Date(p.paymentDate);
           return isWithinInterval(d, { start: currMonthStart, end: currMonthEnd }) && ((p.service && labelPat.test(p.service)) || (p.service_type && labelPat.test(p.service_type)));
         }).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
         const prevValue = prevPayments.filter(p => {
-          const d = new Date(p.payment_date);
+          const d = new Date(p.paymentDate);
           return isWithinInterval(d, { start: prevMonthStart, end: prevMonthEnd }) && ((p.service && labelPat.test(p.service)) || (p.service_type && labelPat.test(p.service_type)));
         }).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
         result.push({
@@ -149,8 +153,8 @@ const DashboardTab = () => {
   const prevPayments = useMemo(() => {
     if (!paymentsQuery.data) return [];
     return paymentsQuery.data.filter(p => {
-      if (!p.payment_date) return false;
-      const d = new Date(p.payment_date);
+      if (!p.paymentDate) return false;
+      const d = new Date(p.paymentDate);
       return isWithinInterval(d, { start: prevStart, end: prevEnd }) || isSameDay(d, prevStart) || isSameDay(d, prevEnd);
     });
   }, [paymentsQuery.data, prevStart, prevEnd]);
@@ -159,11 +163,11 @@ const DashboardTab = () => {
   const piercingGraphData = buildGraphData(filteredPayments, prevPayments, /piercing/i);
   // ... existing metrics and cards logic ...
 
-  // Revenue by payment_type for Payment Type Cards
+  // Revenue by paymentType for Payment Type Cards
   const revenueByType = useMemo(() => {
     const groups = {};
     filteredPayments.forEach(p => {
-      const type = p.payment_type || 'Other';
+      const type = p.paymentType || 'Other';
       if (!groups[type]) groups[type] = 0;
       groups[type] += parseFloat(p.amount) || 0;
     });
@@ -198,11 +202,11 @@ const DashboardTab = () => {
     { label: 'GST Collected', value: `₹${totalGST.toLocaleString()}`, key: 'gst', className: 'text-cyan-200 border-cyan-400 bg-cyan-900/30' },
   ];
 
-  // Revenue by payment_type
+  // Revenue by paymentType
   const revenueByTypeList = useMemo(() => {
     const groups = {};
     filteredPayments.forEach(p => {
-      const type = p.payment_type || 'Other';
+      const type = p.paymentType || 'Other';
       if (!groups[type]) groups[type] = 0;
       groups[type] += parseFloat(p.amount) || 0;
     });
@@ -217,21 +221,21 @@ const DashboardTab = () => {
   const others = revenueByTypeList.slice(2);
   const topTotal = topTypes.reduce((sum, t) => sum + t.value, 0);
 
-  const allCustomers = (useAdminResources().customers?.data || []);
+  const allCustomers = (customersQuery?.data || []);
   const paymentRecords = (paymentsQuery?.data || []).filter(p => {
-    if (!p.payment_date) return false;
-    const d = new Date(p.payment_date);
+    if (!p.paymentDate) return false;
+    const d = new Date(p.paymentDate);
     return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startOfDay(startDate)) || isSameDay(d, endOfDay(endDate));
-  }).sort((a,b) => new Date(b.payment_date) - new Date(a.payment_date));
+  }).sort((a,b) => new Date(b.paymentDate) - new Date(a.paymentDate));
   const paginatedPayments = paymentRecords.slice((paymentsPage-1) * rowsPerPage, paymentsPage * rowsPerPage);
   const totalPaymentsPages = Math.ceil(paymentRecords.length / rowsPerPage) || 1;
   const paymentPagesWindow = getPaginationWindow(paymentsPage, totalPaymentsPages);
 
   const expensesRecords = (expensesQuery?.data || []).filter(e => {
-    if (!e.expense_date) return false;
-    const d = new Date(e.expense_date);
+    if (!e.expenseDate) return false;
+    const d = new Date(e.expenseDate);
     return isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) || isSameDay(d, startOfDay(startDate)) || isSameDay(d, endOfDay(endDate));
-  }).sort((a,b) => new Date(b.expense_date) - new Date(a.expense_date));
+  }).sort((a,b) => new Date(b.expenseDate) - new Date(a.expenseDate));
   const paginatedExpenses = expensesRecords.slice((expensesPage-1) * rowsPerPage, expensesPage * rowsPerPage);
   const totalExpensesPages = Math.ceil(expensesRecords.length / rowsPerPage) || 1;
   const expensesPagesWindow = getPaginationWindow(expensesPage, totalExpensesPages);
@@ -371,15 +375,15 @@ const DashboardTab = () => {
                   {paginatedPayments.length === 0 ? (
                     <tr><td colSpan={7} className="px-4 py-8 text-white/60 text-center">No payment records found.</td></tr>
                   ) : paginatedPayments.map((p, idx) => {
-                    const customer = allCustomers.find(c => c.id === p.customer_id) || {};
+                    const customer = allCustomers.find(c => c.id === p.customerId) || {};
                     return (
                       <tr key={p.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
                         <td className="px-4 py-3 text-left font-bold text-white">{customer.name || 'Unknown'}</td>
                         <td className="px-4 py-3 text-left font-mono text-sky-200">{(customer.phone || '').replace(/^\+91/, '')}</td>
-                        <td className="px-4 py-3 text-center text-white/90">{p.payment_date ? new Date(p.payment_date).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
+                        <td className="px-4 py-3 text-center text-white/90">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
                         <td className="px-4 py-3 text-center font-semibold">₹{parseFloat(p.amount||0).toLocaleString()}</td>
                         <td className="px-4 py-3 text-center">{p.service || '-'}</td>
-                        <td className="px-4 py-3 text-center">{p.payment_type || '-'}</td>
+                        <td className="px-4 py-3 text-center">{p.paymentType || '-'}</td>
                         <td className="px-4 py-3 text-center">{p.gst !== undefined ? `₹${parseFloat(p.gst).toLocaleString()}` : '-'}</td>
                       </tr>
                     );
@@ -445,10 +449,10 @@ const DashboardTab = () => {
                     <tr><td colSpan={4} className="px-4 py-8 text-white/60 text-center">No expense records found.</td></tr>
                   ) : paginatedExpenses.map((e, idx) => (
                     <tr key={e.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
-                      <td className="px-4 py-3 text-center text-white/90">{e.expense_date ? new Date(e.expense_date).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
+                      <td className="px-4 py-3 text-center text-white/90">{e.expenseDate ? new Date(e.expenseDate).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
                       <td className="px-4 py-3 text-center font-semibold">₹{parseFloat(e.amount||0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-center">{e.purpose || '-'}</td>
-                      <td className="px-4 py-3 text-center">{e.payment_method || '-'}</td>
+                      <td className="px-4 py-3 text-center">{e.paymentMethod || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

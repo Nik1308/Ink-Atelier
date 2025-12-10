@@ -10,7 +10,7 @@ import {
   getAdvancePaymentConfirmationMessage
 } from '../../utils/constants';
 import GlassCard from './components/GlassCard';
-import { useAdminResources } from './hooks/useAdminResources';
+import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 
 function ButtonWhatsApp({ phone, message, label }) {
   const [loading, setLoading] = React.useState(false);
@@ -37,7 +37,11 @@ function ButtonWhatsApp({ phone, message, label }) {
 }
 
 const MessagesTab = () => {
-  const { payments, advancePayments, customers } = useAdminResources();
+  const { payments, advancePayments, customers } = useLazyAdminResources({
+    enablePayments: true,
+    enableAdvancePayments: true,
+    enableCustomers: true,
+  });
   const [dateRange, setDateRange] = useState([
     { startDate: startOfDay(new Date()), endDate: endOfDay(new Date()), key: 'selection' }
   ]);
@@ -50,8 +54,8 @@ const MessagesTab = () => {
     ];
     return all
       .filter((p) => {
-        const d = new Date(p.payment_date || p.created_at);
-        const customer = getCustomerById(customers?.data || [], p.customer_id);
+        const d = new Date(p.paymentDate || p.createdAt);
+        const customer = getCustomerById(customers?.data || [], p.customerId);
         return (
           customer && customer.id &&
           (isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) ||
@@ -59,7 +63,7 @@ const MessagesTab = () => {
           isSameDay(d, endDate))
         );
       })
-      .sort((a, b) => new Date(b.payment_date || b.created_at) - new Date(a.payment_date || a.created_at));
+      .sort((a, b) => new Date(b.paymentDate || b.createdAt) - new Date(a.paymentDate || a.createdAt));
   }, [payments?.data, dateRange, customers?.data]);
 
   // Pagination
@@ -99,50 +103,50 @@ const MessagesTab = () => {
               </tr>
             ) : paginatedData.map((msg, idx) => {
               let advanceEntry = null;
-              if (msg.payment_type === 'Advance' && Array.isArray(advancePayments?.data)) {
+              if (msg.paymentType === 'Advance' && Array.isArray(advancePayments?.data)) {
                 advanceEntry = advancePayments.data.find(ap =>
-                  ap.customer_id === msg.customer_id &&
+                  ap.customerId === msg.customerId &&
                   ap.fulfillment === false
                 );
               }
-              const appointmentDate = advanceEntry?.appointment_date || msg.appointment_date || msg.payment_date || '';
-              const advanceAmount = advanceEntry?.advance_amount || msg.amount || msg.advance_amount || '';
-              const dueAmount = advanceEntry?.due_amount || msg.due_amount || '';
+              const appointmentDate = advanceEntry?.appointmentDate || msg.appointmentDate || msg.paymentDate || '';
+              const advanceAmount = advanceEntry?.advanceAmount || msg.amount || msg.advanceAmount || '';
+              const dueAmount = advanceEntry?.dueAmount || msg.dueAmount || '';
               return (
                 <tr
                   key={msg.id || idx}
                   className={`bg-white/5 border-b border-white/15 last:border-b-0 transition text-white`}
                 >
-                  <td className="px-2 py-3 text-left font-extrabold text-white text-[1.18rem]">{getCustomerName(customers?.data || [], msg.customer_id)}</td>
-                  <td className="px-2 py-3 text-left font-mono text-sky-200 text-[1.13rem]">{getCustomerPhone(customers?.data || [], msg.customer_id)}</td>
-                  {/* <td className="px-2 py-3 text-left text-white/80 text-base">{msg.payment_date ? new Date(msg.payment_date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}</td> */}
+                  <td className="px-2 py-3 text-left font-extrabold text-white text-[1.18rem]">{getCustomerName(customers?.data || [], msg.customerId)}</td>
+                  <td className="px-2 py-3 text-left font-mono text-sky-200 text-[1.13rem]">{getCustomerPhone(customers?.data || [], msg.customerId)}</td>
+                  {/* <td className="px-2 py-3 text-left text-white/80 text-base">{msg.paymentDate ? new Date(msg.paymentDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}</td> */}
                   <td className="px-2 py-3 text-left text-white font-semibold text-base">
                     {msg.amount !== undefined ? `₹${parseFloat(msg.amount).toLocaleString()}` : '—'}
                   </td>
                   <td className="px-2 py-3 text-center">
-                    {msg.payment_type !== 'Advance' && (
+                    {msg.paymentType !== 'Advance' && (
                       <ButtonWhatsApp
-                        phone={getCustomerPhone(customers?.data || [], msg.customer_id)}
-                        message={msg.service === 'tattoo' ? getTattooAftercareMessage(getCustomerName(customers?.data || [], msg.customer_id)) : (msg.service === 'piercing' ? getPiercingAftercareMessage(getCustomerName(customers?.data || [], msg.customer_id)) : `Hi${getCustomerName(customers?.data || [], msg.customer_id) ? ' ' + getCustomerName(customers?.data || [], msg.customer_id) : ''},\n\nAftercare instructions will be provided by your artist.`)}
+                        phone={getCustomerPhone(customers?.data || [], msg.customerId)}
+                        message={msg.service === 'tattoo' ? getTattooAftercareMessage(getCustomerName(customers?.data || [], msg.customerId)) : (msg.service === 'piercing' ? getPiercingAftercareMessage(getCustomerName(customers?.data || [], msg.customerId)) : `Hi${getCustomerName(customers?.data || [], msg.customerId) ? ' ' + getCustomerName(customers?.data || [], msg.customerId) : ''},\n\nAftercare instructions will be provided by your artist.`)}
                         label="Aftercare Message"
                       />
                     )}
                   </td>
                   <td className="px-2 py-3 text-center">
-                    {msg.payment_type !== 'Advance' && (
+                    {msg.paymentType !== 'Advance' && (
                       <ButtonWhatsApp
-                        phone={getCustomerPhone(customers?.data || [], msg.customer_id)}
-                        message={getReviewWhatsappMessage(getCustomerName(customers?.data || [], msg.customer_id))}
+                        phone={getCustomerPhone(customers?.data || [], msg.customerId)}
+                        message={getReviewWhatsappMessage(getCustomerName(customers?.data || [], msg.customerId))}
                         label="Review Message"
                       />
                     )}
                   </td>
                   <td className="px-2 py-3 text-center">
-                    {msg.payment_type === 'Advance' ? (
+                    {msg.paymentType === 'Advance' ? (
                       (() => {
-                        const rawName = getCustomerName(customers?.data || [], msg.customer_id);
+                        const rawName = getCustomerName(customers?.data || [], msg.customerId);
                         const clientName = rawName === 'Unknown' ? '' : rawName;
-                        const phone = getCustomerPhone(customers?.data || [], msg.customer_id);
+                        const phone = getCustomerPhone(customers?.data || [], msg.customerId);
                         const formattedPhone = phone.replace(/[^0-9]/g, '');
                         const confirmationMessage = getAdvancePaymentConfirmationMessage({
                           clientName,

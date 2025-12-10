@@ -68,9 +68,9 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
     ];
     return all
       .filter((p) => {
-        const d = new Date(p.payment_date || p.created_at);
+        const d = new Date(p.paymentDate || p.createdAt);
         // Only include if customer exists
-        const customer = getCustomerById(customers, p.customer_id);
+        const customer = getCustomerById(customers, p.customerId);
         return (
           customer && customer.id &&
           (isWithinInterval(d, { start: startOfDay(startDate), end: endOfDay(endDate) }) ||
@@ -78,7 +78,7 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
           isSameDay(d, endDate))
         );
       })
-      .sort((a, b) => new Date(b.payment_date || b.created_at) - new Date(a.payment_date || a.created_at));
+      .sort((a, b) => new Date(b.paymentDate || b.createdAt) - new Date(a.paymentDate || a.createdAt));
   }, [payments, advancePayments, dateRange, customers]);
 
   // Pagination
@@ -94,10 +94,10 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
   } = usePagination(filteredMessages, ITEMS_PER_PAGE);
 
   const columns = [
-    { header: 'Customer Name', accessor: 'customer_id', render: (msg) => getCustomerName(customers, msg.customer_id), cellClassName: 'text-left', headerClassName: 'text-left' },
-    { header: 'Phone', accessor: 'customer_id', render: (msg) => getCustomerPhone(customers, msg.customer_id), cellClassName: 'text-center', headerClassName: 'text-center' },
+    { header: 'Customer Name', accessor: 'customerId', render: (msg) => getCustomerName(customers, msg.customerId), cellClassName: 'text-left', headerClassName: 'text-left' },
+    { header: 'Phone', accessor: 'customerId', render: (msg) => getCustomerPhone(customers, msg.customerId), cellClassName: 'text-center', headerClassName: 'text-center' },
     { header: 'Payment Amount', accessor: 'amount', render: (msg) => {
-      const amount = msg.amount !== undefined ? msg.amount : msg.advance_amount;
+      const amount = msg.amount !== undefined ? msg.amount : msg.advanceAmount;
       return amount ? `₹${parseFloat(amount).toLocaleString()}` : '—';
     }, cellClassName: 'text-center', headerClassName: 'text-center' },
     {
@@ -106,9 +106,9 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
       cellClassName: 'text-center',
       headerClassName: 'text-center',
       render: (msg) => {
-        if (msg.payment_type === 'Advance') return null;
-        const phone = getCustomerPhone(customers, msg.customer_id);
-        const rawName = getCustomerName(customers, msg.customer_id);
+        if (msg.paymentType === 'Advance') return null;
+        const phone = getCustomerPhone(customers, msg.customerId);
+        const rawName = getCustomerName(customers, msg.customerId);
         const clientName = rawName === 'Unknown' ? '' : rawName;
         let aftercareMessage = '';
         if (msg.service === 'tattoo') {
@@ -118,11 +118,11 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
         } else {
           aftercareMessage = `Hi${clientName ? ' ' + clientName : ''},\n\nAftercare instructions will be provided by your artist.`;
         }
-        const customer = customers.find(c => c.id === msg.customer_id);
+        const customer = customers.find(c => c.id === msg.customerId);
         const aftercareSent = customer && customer.aftercare_msg;
         return (
           <ButtonWithPatchAndWhatsApp
-            customerId={msg.customer_id}
+            customerId={msg.customerId}
             phone={phone}
             clientName={clientName}
             message={aftercareMessage}
@@ -140,9 +140,9 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
       cellClassName: 'text-center',
       headerClassName: 'text-center',
       render: (msg) => {
-        if (msg.payment_type === 'Advance') {
-          const phone = getCustomerPhone(customers, msg.customer_id);
-          const rawName = getCustomerName(customers, msg.customer_id);
+        if (msg.paymentType === 'Advance') {
+          const phone = getCustomerPhone(customers, msg.customerId);
+          const rawName = getCustomerName(customers, msg.customerId);
           const clientName = rawName === 'Unknown' ? '' : rawName;
           const formattedPhone = phone.replace(/[^0-9]/g, '');
 
@@ -150,14 +150,14 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
           let advanceEntry = null;
           if (Array.isArray(advancePayments)) {
             advanceEntry = advancePayments.find(ap =>
-              ap.customer_id === msg.customer_id &&
+              ap.customerId === msg.customerId &&
               ap.fulfillment === false
             );
           }
 
-          const appointmentDate = advanceEntry?.appointment_date || msg.appointment_date || msg.payment_date || '';
-          const advanceAmount = advanceEntry?.advance_amount || msg.amount || msg.advance_amount || '';
-          const dueAmount = advanceEntry?.due_amount || msg.due_amount || '';
+          const appointmentDate = advanceEntry?.appointmentDate || msg.appointmentDate || msg.paymentDate || '';
+          const advanceAmount = advanceEntry?.advanceAmount || msg.amount || msg.advanceAmount || '';
+          const dueAmount = advanceEntry?.dueAmount || msg.dueAmount || '';
 
           const confirmationMessage = getAdvancePaymentConfirmationMessage({
             clientName,
@@ -184,15 +184,15 @@ const MessagesTab = ({ payments, advancePayments, customers }) => {
       cellClassName: 'text-center',
       headerClassName: 'text-center',
       render: (msg) => {
-        if (msg.payment_type === 'Advance') return null;
-        const phone = getCustomerPhone(customers, msg.customer_id);
-        const rawName = getCustomerName(customers, msg.customer_id);
+        if (msg.paymentType === 'Advance') return null;
+        const phone = getCustomerPhone(customers, msg.customerId);
+        const rawName = getCustomerName(customers, msg.customerId);
         const clientName = rawName === 'Unknown' ? '' : rawName;
-        const customer = customers.find(c => c.id === msg.customer_id);
+        const customer = customers.find(c => c.id === msg.customerId);
         const reviewSent = customer && customer.review_msg;
         return (
           <ButtonWithPatchAndWhatsApp
-            customerId={msg.customer_id}
+            customerId={msg.customerId}
             phone={phone}
             clientName={clientName}
             message={getReviewWhatsappMessage(clientName)}

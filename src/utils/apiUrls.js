@@ -2,31 +2,32 @@ import { INSTAGRAM_USER_ID, ACCESS_TOKEN } from "./secrets";
 
 export const INSTAGRAM_API_URL = `https://graph.instagram.com/${INSTAGRAM_USER_ID}/media?fields=id,caption,media_url,permalink,media_type,thumbnail_url,timestamp&access_token=${ACCESS_TOKEN}&limit=10`;
 
-export const TATTOO_CONSENT_FORM_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/tattoo_consent_form";
+// API Base URL
+export const API_BASE_URL = "https://inkatelier-backend-production.up.railway.app";
 
-export const UPLOAD_IMAGE_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/upload/image";
+export const TATTOO_CONSENT_FORM_API_URL = `${API_BASE_URL}/tattoo_consent_form`;
 
-export const CUSTOMER_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/customer";
+export const UPLOAD_IMAGE_API_URL = `${API_BASE_URL}/upload/image`;
 
-export const PIERCING_CONSENT_FORM_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/piercing_consent_form";
+export const CUSTOMER_API_URL = `${API_BASE_URL}/customer`;
 
-export const PAYMENT_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/payment";
+export const PIERCING_CONSENT_FORM_API_URL = `${API_BASE_URL}/piercing_consent_form`;
 
-export const ADVANCE_PAYMENT_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/advance_payment";
+export const PAYMENT_API_URL = `${API_BASE_URL}/payment`;
 
-export const EXPENSE_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/expense";
+export const ADVANCE_PAYMENT_API_URL = `${API_BASE_URL}/advance_payment`;
 
-export const LEADS_API_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB/leads";
+export const LEADS_API_URL = `${API_BASE_URL}/leads`;
+
+export const EXPENSE_API_URL = `${API_BASE_URL}/expense`;
  
 // Backend PDF and WhatsApp service URLs
-export const BACKEND_BASE_URL = "http://localhost:5001";
-export const GENERATE_CONSENT_PDF_URL = `${BACKEND_BASE_URL}/api/generate-consent-pdf`;
-export const GENERATE_PDF_ONLY_URL = `${BACKEND_BASE_URL}/api/generate-pdf-only`;
-export const SEND_WHATSAPP_MESSAGE_URL = `${BACKEND_BASE_URL}/api/send-whatsapp-message`;
+export const GENERATE_CONSENT_PDF_URL = `${API_BASE_URL}/generate-consent-pdf`;
+export const GENERATE_PDF_ONLY_URL = `${API_BASE_URL}/generate-pdf-only`;
+export const SEND_WHATSAPP_MESSAGE_URL = `${API_BASE_URL}/send-whatsapp-message`;
 
 // Authentication API URLs
-export const XANO_BASE_URL = "https://x8ki-letl-twmt.n7.xano.io/api:kpJdX1YB";
-export const LOGIN_API_URL = `${XANO_BASE_URL}/auth/login`;
-export const LOGOUT_API_URL = `${XANO_BASE_URL}/auth/logout`;
+export const LOGIN_API_URL = `${API_BASE_URL}/auth/login`;
+export const LOGOUT_API_URL = `${API_BASE_URL}/auth/logout`;
  
 // Add more API URLs here as needed 

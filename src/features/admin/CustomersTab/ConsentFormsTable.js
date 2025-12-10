@@ -3,12 +3,12 @@ import Table from '../../common/ui/Table';
 
 const ConsentFormsTable = ({ forms, customers = [], onDownload, downloading, onViewDetails, showCustomerPhone = false }) => {
   const columns = [
-    { header: 'Date', accessor: 'created_at', render: (f) => f.created_at ? new Date(f.created_at).toLocaleDateString() : 'N/A' },
+    { header: 'Date', accessor: 'createdAt', render: (f) => f.createdAt ? new Date(f.createdAt).toLocaleDateString() : 'N/A' },
     { header: 'Type', accessor: 'type', render: (f) => f.type ? f.type.charAt(0).toUpperCase() + f.type.slice(1) : 'N/A' },
-    { header: 'Customer', accessor: 'customer_id', render: (f) => customers.find(c => c.id === f.customer_id)?.name || 'N/A' },
+    { header: 'Customer', accessor: 'customerId', render: (f) => customers.find(c => c.id === f.customerId)?.name || 'N/A' },
   ];
   if (showCustomerPhone) {
-    columns.push({ header: 'Phone', accessor: 'customer_id', render: (f) => customers.find(c => c.id === f.customer_id)?.phone || 'N/A' });
+    columns.push({ header: 'Phone', accessor: 'customerId', render: (f) => customers.find(c => c.id === f.customerId)?.phone || 'N/A' });
   }
   columns.push({
     header: 'Actions',
