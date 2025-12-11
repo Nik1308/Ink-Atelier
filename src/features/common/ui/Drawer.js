@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { FiPlus, FiTrash2, FiX } from 'react-icons/fi';
+
 
 const Drawer = ({ open, isOpen, onClose, children, maxWidth = 'max-w-lg', side = 'right' }) => {
   // Support both 'open' and 'isOpen' props for compatibility
@@ -45,11 +47,11 @@ const Drawer = ({ open, isOpen, onClose, children, maxWidth = 'max-w-lg', side =
         style={{ willChange: 'transform', zIndex: 10000 }}
       >
         <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold focus:outline-none"
+          className="absolute top-6 right-8 text-gray-500 hover:text-gray-800 text-2xl font-bold focus:outline-none"
           onClick={onClose}
           aria-label="Close drawer"
         >
-          &times;
+          <FiX className="text-2xl" />
         </button>
         <div className="p-6 overflow-y-auto h-full">
           {children}
