@@ -87,7 +87,7 @@ const FormField = React.forwardRef(({
         );
       case "phone":
         return (
-          <div className="flex items-center w-full max-w-[400px]">
+          <div className="flex items-center w-full">
             <span className="bg-gray-100 border border-black rounded-l-lg px-4 py-3 text-gray-700 font-semibold text-lg select-none w-16 text-center">+91</span>
             <input
               id={name}

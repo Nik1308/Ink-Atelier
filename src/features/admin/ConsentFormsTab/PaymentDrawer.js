@@ -93,9 +93,24 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
         }
       }
       
+      // For quantity, allow empty value during editing but don't enforce min yet
+      if (field === 'quantity') {
+        // Allow empty string, but if it's a number, ensure it's at least 1
+        if (value !== '' && value !== null && value !== undefined) {
+          const numValue = parseFloat(value);
+          if (!isNaN(numValue) && numValue < 1) {
+            updatedItem.quantity = '1';
+          } else {
+            updatedItem.quantity = value;
+          }
+        } else {
+          updatedItem.quantity = value; // Allow empty for clearing
+        }
+      }
+      
       newItems[index] = updatedItem;
       
-      // Calculate totals from items
+      // Calculate totals from items (use 1 as default for empty quantity)
       const totalAmount = newItems.reduce((sum, item) => sum + (parseFloat(item.amount || 0) * parseFloat(item.quantity || 1)), 0);
       const totalGST = newItems.reduce((sum, item) => sum + (parseFloat(item.gst || 0) * parseFloat(item.quantity || 1)), 0);
       return {
@@ -104,6 +119,23 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
       };
     });
     setError(null);
+  };
+
+  const handleQuantityBlur = (index) => {
+    setPaymentForm((prev) => {
+      const newItems = [...(prev.items || [])];
+      const item = newItems[index];
+      // If quantity is empty or invalid, set to 1
+      if (!item.quantity || item.quantity === '' || parseFloat(item.quantity) < 1) {
+        item.quantity = '1';
+        newItems[index] = item;
+        return {
+          ...prev,
+          items: newItems,
+        };
+      }
+      return prev;
+    });
   };
 
   const addItem = () => {
@@ -218,7 +250,12 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
     <Drawer open={open} onClose={onClose} maxWidth="max-w-2xl" side="right">
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Record Payment</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Record Payment</h2>
+            {customer?.name && (
+              <p className="text-lg font-semibold text-blue-600 mt-1">{customer.name}</p>
+            )}
+          </div>
           {/* <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 transition"
@@ -341,10 +378,14 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
                           label="Quantity"
                           name={`item-quantity-${index}`}
                           type="number"
-                          value={item.quantity || '1'}
+                          value={item.quantity || ''}
                           onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                          onBlur={() => handleQuantityBlur(index)}
                           required
                           min="1"
+                          step="1"
+                          pattern="[0-9]*"
+                          inputMode="numeric"
                           placeholder="Qty"
                           inputClassName="bg-white text-gray-900 border-gray-300"
                           labelClassName="text-gray-700 font-semibold text-sm"
