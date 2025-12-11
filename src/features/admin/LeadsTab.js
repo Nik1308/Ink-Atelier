@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { FiFilter, FiX } from 'react-icons/fi';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { fetchApi } from '../../utils/Fetch';
-import { LEADS_API_URL } from '../../utils/apiUrls';
+import { LEADS_API_URL, ADVANCE_PAYMENT_API_URL } from '../../utils/apiUrls';
 import GlassModal from '../common/ui/GlassModal';
 import FormField from '../forms/components/FormField';
 import LoadingSpinner from '../common/ui/LoadingSpinner';
@@ -10,11 +10,14 @@ import ErrorMessage from '../common/ui/ErrorMessage';
 import DateRangeSelector from '../common/ui/DateRangeSelector';
 import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import usePagination from '../common/hooks/usePagination';
-import { startOfDay, endOfDay, isWithinInterval, isSameDay } from 'date-fns';
+import { startOfDay, endOfDay, isWithinInterval, isSameDay, startOfMonth, format, addDays, differenceInDays, parse, getYear, setYear } from 'date-fns';
+import GlassCard from './components/GlassCard';
 
 const LeadsTab = () => {
-  const { leads } = useLazyAdminResources({
+  const { leads, advancePayments: advancePaymentsQuery, customers: customersQuery } = useLazyAdminResources({
     enableLeads: true,
+    enableAdvancePayments: true,
+    enableCustomers: true,
   });
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +32,7 @@ const LeadsTab = () => {
   const [success, setSuccess] = useState(null);
   const [togglingButtons, setTogglingButtons] = useState(new Set());
   const [dateRange, setDateRange] = useState([
-    { startDate: startOfDay(new Date()), endDate: endOfDay(new Date()), key: 'selection' }
+    { startDate: startOfMonth(new Date()), endDate: endOfDay(new Date()), key: 'selection' }
   ]);
   const [filters, setFilters] = useState({
     isConverted: false, // false = not selected, true = show only converted
@@ -39,6 +42,29 @@ const LeadsTab = () => {
   });
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('leads'); // 'leads', 'bookings', or 'birthdays'
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [birthdaysPage, setBirthdaysPage] = useState(1);
+  const [fulfillingId, setFulfillingId] = useState(null);
+  const rowsPerPage = 10;
+
+  const fulfillMutation = useMutation({
+    mutationFn: async (booking) => {
+      setFulfillingId(booking.id);
+      await fetchApi(`${ADVANCE_PAYMENT_API_URL}/${booking.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fulfillment: true }),
+      });
+    },
+    onSuccess: () => {
+      setFulfillingId(null);
+      queryClient.invalidateQueries(['advancePayments']);
+    },
+    onError: () => {
+      setFulfillingId(null);
+    }
+  });
 
   // Auto-dismiss success message
   useEffect(() => {
@@ -240,145 +266,338 @@ const LeadsTab = () => {
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
+  // Upcoming bookings data processing
+  const allCustomers = (customersQuery?.data || []);
+  const upcomingBookings = (advancePaymentsQuery?.data || []).filter(b => !b.fulfillment && b.appointmentDate).sort((a, b) => {
+    const dateA = new Date(a.appointmentDate);
+    const dateB = new Date(b.appointmentDate);
+    return dateA - dateB; // Sort ascending (earliest first)
+  });
+  
+  // Pagination window helper
+  const getPaginationWindow = (current, total) => {
+    const window = [];
+    if (total <= 7) {
+      for (let i = 1; i <= total; ++i) window.push(i);
+      return window;
+    }
+    let left = Math.max(2, current - 2);
+    let right = Math.min(total - 1, current + 2);
+    if (current <= 4) {
+      left = 2; right = 5;
+    } else if (current >= total - 3) {
+      left = total - 4; right = total - 1;
+    }
+    window.push(1);
+    if (left > 2) window.push('...');
+    for (let i = left; i <= right; ++i) window.push(i);
+    if (right < total - 1) window.push('...');
+    window.push(total);
+    return window;
+  };
+  
+  const paginatedBookings = upcomingBookings.slice((bookingsPage-1) * rowsPerPage, bookingsPage * rowsPerPage);
+  const totalBookingsPages = Math.ceil(upcomingBookings.length / rowsPerPage) || 1;
+  const bookingsPagesWindow = getPaginationWindow(bookingsPage, totalBookingsPages);
+
+  // Function to send WhatsApp birthday message
+  const sendWhatsAppMessage = (customer) => {
+    const phone = customer.phone || '';
+    // Remove all non-digit characters
+    let cleanPhone = phone.replace(/\D/g, '');
+    
+    // If phone starts with 91 (India country code), keep it; otherwise add 91
+    if (cleanPhone.length === 10) {
+      cleanPhone = '91' + cleanPhone;
+    } else if (cleanPhone.startsWith('91') && cleanPhone.length === 12) {
+      // Already has country code
+      cleanPhone = cleanPhone;
+    } else if (cleanPhone.length < 10) {
+      alert('Invalid phone number');
+      return;
+    }
+    
+    // Check if birthday is today (daysUntil === 0)
+    const isToday = customer.daysUntil === 0;
+    
+    // WhatsApp Web has known issues with emojis in URL parameters showing as question marks
+    // Using text-only message for reliable compatibility
+    const message = isToday 
+      ? `Happy Birthday from Ink Atelier!
+
+It's your day — and we're celebrating with you!
+
+Enjoy a massive 25% OFF tattoos + 15% OFF piercings valid once during your birthday month.
+
+This is your sign to get that tattoo or piercing you've been thinking about.
+
+Let's make your birthday unforgettable!`
+      : `Happy Birthday from Ink Atelier!
+
+Your birthday is coming up soon… and we couldn't wait!
+
+Here's your early birthday treat: 25% OFF tattoos + 15% OFF piercings, valid once during your birthday month.
+
+Go ahead — plan something bold, fun, and unforgettable.
+
+Your birthday month deserves fresh ink or a new piercing!`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  // Upcoming birthdays data processing
+  const getUpcomingBirthdays = () => {
+    const today = new Date();
+    
+    return (allCustomers || []).filter(customer => {
+      // Handle both date_of_birth and dateOfBirth formats
+      const dob = customer.date_of_birth || customer.dateOfBirth;
+      if (!dob) return false;
+      
+      try {
+        // Parse the date of birth (assuming format like "2000-03-14" or similar)
+        const birthDate = new Date(dob);
+        if (isNaN(birthDate.getTime())) return false;
+        
+        // Get this year's birthday
+        const thisYearBirthday = setYear(birthDate, getYear(today));
+        const nextYearBirthday = setYear(birthDate, getYear(today) + 1);
+        
+        // Check if birthday is within next 15 days (this year or next year)
+        const daysUntilThisYear = differenceInDays(thisYearBirthday, today);
+        const daysUntilNextYear = differenceInDays(nextYearBirthday, today);
+        
+        // Birthday is upcoming if it's within 15 days (either this year or next year)
+        return (daysUntilThisYear >= 0 && daysUntilThisYear <= 15) || 
+               (daysUntilNextYear >= 0 && daysUntilNextYear <= 15);
+      } catch (e) {
+        return false;
+      }
+    }).map(customer => {
+      const dob = customer.date_of_birth || customer.dateOfBirth;
+      const birthDate = new Date(dob);
+      const thisYearBirthday = setYear(birthDate, getYear(new Date()));
+      const nextYearBirthday = setYear(birthDate, getYear(new Date()) + 1);
+      const today = new Date();
+      
+      const daysUntilThisYear = differenceInDays(thisYearBirthday, today);
+      const daysUntilNextYear = differenceInDays(nextYearBirthday, today);
+      
+      let upcomingBirthday;
+      let daysUntil;
+      
+      if (daysUntilThisYear >= 0 && daysUntilThisYear <= 15) {
+        upcomingBirthday = thisYearBirthday;
+        daysUntil = daysUntilThisYear;
+      } else {
+        upcomingBirthday = nextYearBirthday;
+        daysUntil = daysUntilNextYear;
+      }
+      
+      return {
+        ...customer,
+        upcomingBirthday,
+        daysUntil,
+        date_of_birth: dob
+      };
+    }).sort((a, b) => a.daysUntil - b.daysUntil); // Sort by days until birthday
+  };
+  
+  const upcomingBirthdays = getUpcomingBirthdays();
+  const paginatedBirthdays = upcomingBirthdays.slice((birthdaysPage-1) * rowsPerPage, birthdaysPage * rowsPerPage);
+  const totalBirthdaysPages = Math.ceil(upcomingBirthdays.length / rowsPerPage) || 1;
+  const birthdaysPagesWindow = getPaginationWindow(birthdaysPage, totalBirthdaysPages);
+
+  // Dynamic heading based on active tab
+  const getHeadingText = () => {
+    if (activeTab === 'bookings') {
+      return 'Upcoming Bookings';
+    }
+    if (activeTab === 'birthdays') {
+      return 'Upcoming Birthdays';
+    }
+    return 'Leads';
+  };
+
   return (
     <div className="max-w-7xl mx-auto pt-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-7">
         <h1 className="text-white text-3xl md:text-4xl font-semibold tracking-tight mb-2 md:mb-0">
-          Leads
+          {getHeadingText()}
         </h1>
-        <div className="flex items-center gap-4">
-          <DateRangeSelector dateRange={dateRange} setDateRange={setDateRange} months={1} direction="horizontal" />
-          
-          {/* Filters Button */}
-          <div className="relative" ref={filtersRef}>
-            <button
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              className={`px-6 py-3 rounded-xl text-base font-bold shadow transition flex items-center gap-2 ${
-                activeFiltersCount > 0
-                  ? 'bg-sky-500 text-white hover:bg-sky-600'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              <FiFilter className="text-lg" />
-              Filters
-              {activeFiltersCount > 0 && (
-                <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-
-            {/* Filters Dropdown */}
-            {filtersOpen && (
-              <div className="absolute right-0 mt-2 bg-gradient-to-br from-slate-900/95 to-black/95 border border-white/10 rounded-xl shadow-2xl p-4 min-w-[240px] z-50">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-semibold text-base">Filters</h3>
-                  <button
-                    onClick={() => setFiltersOpen(false)}
-                    className="text-white/70 hover:text-white transition"
-                  >
-                    <FiX className="text-lg" />
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {/* Is Converted Filter */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('isConverted')}>
-                      Is Converted
-                    </label>
-                    <button
-                      onClick={() => handleFilterToggle('isConverted')}
-                      className={`relative w-12 h-6 rounded-full transition ${
-                        filters.isConverted ? 'bg-green-500' : 'bg-white/20'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.isConverted ? 'translate-x-6' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Follow Up 1 Filter */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp1')}>
-                      Follow Up 1
-                    </label>
-                    <button
-                      onClick={() => handleFilterToggle('followUp1')}
-                      className={`relative w-12 h-6 rounded-full transition ${
-                        filters.followUp1 ? 'bg-green-500' : 'bg-white/20'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.followUp1 ? 'translate-x-6' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Follow Up 2 Filter */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp2')}>
-                      Follow Up 2
-                    </label>
-                    <button
-                      onClick={() => handleFilterToggle('followUp2')}
-                      className={`relative w-12 h-6 rounded-full transition ${
-                        filters.followUp2 ? 'bg-green-500' : 'bg-white/20'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.followUp2 ? 'translate-x-6' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Follow Up 3 Filter */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp3')}>
-                      Follow Up 3
-                    </label>
-                    <button
-                      onClick={() => handleFilterToggle('followUp3')}
-                      className={`relative w-12 h-6 rounded-full transition ${
-                        filters.followUp3 ? 'bg-green-500' : 'bg-white/20'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                          filters.followUp3 ? 'translate-x-6' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Clear All Button */}
+        {activeTab === 'leads' && (
+          <div className="flex items-center gap-4">
+            <DateRangeSelector dateRange={dateRange} setDateRange={setDateRange} months={1} direction="horizontal" />
+            
+            {/* Filters Button */}
+            <div className="relative" ref={filtersRef}>
+              <button
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                className={`px-6 py-3 rounded-xl text-base font-bold shadow transition flex items-center gap-2 ${
+                  activeFiltersCount > 0
+                    ? 'bg-sky-500 text-white hover:bg-sky-600'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <FiFilter className="text-lg" />
+                Filters
                 {activeFiltersCount > 0 && (
-                  <button
-                    onClick={() => {
-                      setFilters({ isConverted: false, followUp1: false, followUp2: false, followUp3: false });
-                    }}
-                    className="mt-4 w-full px-4 py-2 rounded-lg text-sm font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition"
-                  >
-                    Clear All
-                  </button>
+                  <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {activeFiltersCount}
+                  </span>
                 )}
-              </div>
-            )}
-          </div>
+              </button>
 
+              {/* Filters Dropdown */}
+              {filtersOpen && (
+                <div className="absolute right-0 mt-2 bg-gradient-to-br from-slate-900/95 to-black/95 border border-white/10 rounded-xl shadow-2xl p-4 min-w-[240px] z-50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-semibold text-base">Filters</h3>
+                    <button
+                      onClick={() => setFiltersOpen(false)}
+                      className="text-white/70 hover:text-white transition"
+                    >
+                      <FiX className="text-lg" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* Is Converted Filter */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('isConverted')}>
+                        Is Converted
+                      </label>
+                      <button
+                        onClick={() => handleFilterToggle('isConverted')}
+                        className={`relative w-12 h-6 rounded-full transition ${
+                          filters.isConverted ? 'bg-green-500' : 'bg-white/20'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            filters.isConverted ? 'translate-x-6' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {/* Follow Up 1 Filter */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp1')}>
+                        Follow Up 1
+                      </label>
+                      <button
+                        onClick={() => handleFilterToggle('followUp1')}
+                        className={`relative w-12 h-6 rounded-full transition ${
+                          filters.followUp1 ? 'bg-green-500' : 'bg-white/20'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            filters.followUp1 ? 'translate-x-6' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {/* Follow Up 2 Filter */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp2')}>
+                        Follow Up 2
+                      </label>
+                      <button
+                        onClick={() => handleFilterToggle('followUp2')}
+                        className={`relative w-12 h-6 rounded-full transition ${
+                          filters.followUp2 ? 'bg-green-500' : 'bg-white/20'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            filters.followUp2 ? 'translate-x-6' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {/* Follow Up 3 Filter */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-white/90 text-sm font-medium cursor-pointer flex-1" onClick={() => handleFilterToggle('followUp3')}>
+                        Follow Up 3
+                      </label>
+                      <button
+                        onClick={() => handleFilterToggle('followUp3')}
+                        className={`relative w-12 h-6 rounded-full transition ${
+                          filters.followUp3 ? 'bg-green-500' : 'bg-white/20'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            filters.followUp3 ? 'translate-x-6' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Clear All Button */}
+                  {activeFiltersCount > 0 && (
+                    <button
+                      onClick={() => {
+                        setFilters({ isConverted: false, followUp1: false, followUp2: false, followUp3: false });
+                      }}
+                      className="mt-4 w-full px-4 py-2 rounded-lg text-sm font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-6 py-3 rounded-xl bg-white text-black text-base font-bold shadow hover:bg-gray-100 transition"
+            >
+              Add Lead
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 border-b border-white/20">
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-6 py-3 rounded-xl bg-white text-black text-base font-bold shadow hover:bg-gray-100 transition"
+            onClick={() => setActiveTab('leads')}
+            className={`px-6 py-3 text-base font-semibold transition-all rounded-t-lg ${
+              activeTab === 'leads'
+                ? 'bg-white/20 text-white border-b-2 border-sky-400'
+                : 'text-white/70 hover:text-white hover:bg-white/10'
+            }`}
           >
-            Add Lead
+            Leads
+          </button>
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`px-6 py-3 text-base font-semibold transition-all rounded-t-lg ${
+              activeTab === 'bookings'
+                ? 'bg-white/20 text-white border-b-2 border-sky-400'
+                : 'text-white/70 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            Upcoming Bookings
+          </button>
+          <button
+            onClick={() => setActiveTab('birthdays')}
+            className={`px-6 py-3 text-base font-semibold transition-all rounded-t-lg ${
+              activeTab === 'birthdays'
+                ? 'bg-white/20 text-white border-b-2 border-sky-400'
+                : 'text-white/70 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            Upcoming Birthday
           </button>
         </div>
       </div>
@@ -464,8 +683,11 @@ const LeadsTab = () => {
         </div>
       </GlassModal>
 
-      {/* Leads Table */}
-      <div className="overflow-x-auto">
+      {/* Leads Tab Content */}
+      {activeTab === 'leads' && (
+        <>
+          {/* Leads Table */}
+          <div className="overflow-x-auto">
         <table className="w-full min-w-[1050px] rounded-2xl overflow-hidden border-collapse">
           <thead className="bg-white/10 rounded-2xl">
             <tr className="text-white/80 text-lg font-bold">
@@ -608,6 +830,165 @@ const LeadsTab = () => {
                 >
                   Next
                 </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+        </>
+      )}
+
+      {/* Upcoming Bookings Tab Content */}
+      {activeTab === 'bookings' && (
+        <div className="w-full">
+          <div className="w-full overflow-x-auto pb-2">
+            <table className="w-full min-w-[900px] glass-table rounded-2xl overflow-hidden border-collapse">
+              <thead className="bg-white/10 sticky top-0 z-10">
+                <tr className="text-white/80 text-base font-bold">
+                  <th className="px-4 py-3 text-left">Customer Name</th>
+                  <th className="px-4 py-3 text-left">Phone</th>
+                  <th className="px-4 py-3 text-center">Appointment Date</th>
+                  <th className="px-4 py-3 text-center">Advance Amount</th>
+                  <th className="px-4 py-3 text-center">Due Amount</th>
+                  <th className="px-4 py-3 text-center">Service</th>
+                  <th className="px-4 py-3 text-center">Fulfillment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedBookings.length === 0 ? (
+                  <tr><td colSpan={7} className="px-4 py-8 text-white/60 text-center">No upcoming bookings found.</td></tr>
+                ) : paginatedBookings.map((b, idx) => {
+                  const customer = allCustomers.find(c => c.id === b.customerId) || {};
+                  return (
+                    <tr key={b.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
+                      <td className="px-4 py-3 text-left font-bold text-white">{customer.name || 'Unknown'}</td>
+                      <td className="px-4 py-3 text-left font-mono text-sky-200">{(customer.phone || '').replace(/^\+91/, '')}</td>
+                      <td className="px-4 py-3 text-center text-white/90">{b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
+                      <td className="px-4 py-3 text-center font-semibold">{b.advanceAmount ? `₹${parseFloat(b.advanceAmount).toLocaleString()}` : '—'}</td>
+                      <td className="px-4 py-3 text-center font-semibold">{b.dueAmount ? `₹${parseFloat(b.dueAmount).toLocaleString()}` : '—'}</td>
+                      <td className="px-4 py-3 text-center">{b.service || '—'}</td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => fulfillMutation.mutate(b)}
+                          disabled={fulfillingId === b.id || b.fulfillment}
+                          className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {fulfillingId === b.id ? 'Fulfilling...' : b.fulfillment ? 'Fulfilled' : 'Fulfill'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {totalBookingsPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6 mb-2">
+                <button
+                  onClick={() => setBookingsPage(p => Math.max(1, p-1))}
+                  disabled={bookingsPage===1}
+                  className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${bookingsPage === 1 ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                  style={{minWidth:44}}
+                >Prev</button>
+                {bookingsPagesWindow.map((num, idx) => num === '...'
+                  ? <span key={`dots${idx}`} className="mx-1 text-gray-300 text-lg px-1 font-bold">…</span>
+                  : <button
+                      key={num}
+                      onClick={() => setBookingsPage(num)}
+                      className={`mx-[2px] px-4 py-2 rounded-2xl border-none font-bold text-base transition shadow backdrop-blur ${bookingsPage===num ? 'bg-sky-500 text-white' : 'bg-white/12 text-white/70 hover:bg-sky-400 hover:text-white'}`}
+                      style={{minWidth:44}}
+                    >{num}</button>
+                )}
+                <button
+                  onClick={() => setBookingsPage(p => Math.min(totalBookingsPages, p+1))}
+                  disabled={bookingsPage===totalBookingsPages}
+                  className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${bookingsPage === totalBookingsPages ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                  style={{minWidth:44}}
+                >Next</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Birthdays Tab Content */}
+      {activeTab === 'birthdays' && (
+        <div className="w-full">
+          <div className="w-full overflow-x-auto pb-2">
+            <table className="w-full min-w-[800px] glass-table rounded-2xl overflow-hidden border-collapse">
+              <thead className="bg-white/10 sticky top-0 z-10">
+                <tr className="text-white/80 text-base font-bold">
+                  <th className="px-4 py-3 text-left">Customer Name</th>
+                  <th className="px-4 py-3 text-left">Phone</th>
+                  <th className="px-4 py-3 text-center">Date of Birth</th>
+                  <th className="px-4 py-3 text-center">Upcoming Birthday</th>
+                  <th className="px-4 py-3 text-center">Days Until</th>
+                  <th className="px-4 py-3 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedBirthdays.length === 0 ? (
+                  <tr><td colSpan={6} className="px-4 py-8 text-white/60 text-center">No upcoming birthdays in the next 15 days.</td></tr>
+                ) : paginatedBirthdays.map((customer, idx) => {
+                  return (
+                    <tr key={customer.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
+                      <td className="px-4 py-3 text-left font-bold text-white">{customer.name || 'Unknown'}</td>
+                      <td className="px-4 py-3 text-left font-mono text-sky-200">{(customer.phone || '').replace(/^\+91/, '')}</td>
+                      <td className="px-4 py-3 text-center text-white/90">
+                        {customer.date_of_birth ? format(new Date(customer.date_of_birth), 'MMM d, yyyy') : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-center text-white/90">
+                        {customer.upcomingBirthday ? format(customer.upcomingBirthday, 'MMM d, yyyy') : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`px-3 py-1 rounded-lg font-semibold text-sm ${
+                          customer.daysUntil === 0 
+                            ? 'bg-green-500 text-white' 
+                            : customer.daysUntil <= 3 
+                            ? 'bg-yellow-500 text-white' 
+                            : 'bg-blue-500 text-white'
+                        }`}>
+                          {customer.daysUntil === 0 ? 'Today' : customer.daysUntil === 1 ? 'Tomorrow' : `${customer.daysUntil} days`}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => sendWhatsAppMessage(customer)}
+                          className="bg-green-600 text-white px-4 py-1.5 rounded-lg font-semibold text-sm hover:bg-green-700 transition flex items-center gap-2 mx-auto"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                          </svg>
+                          Send Message
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {totalBirthdaysPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6 mb-2">
+                <button
+                  onClick={() => setBirthdaysPage(p => Math.max(1, p-1))}
+                  disabled={birthdaysPage===1}
+                  className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${birthdaysPage === 1 ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                  style={{minWidth:44}}
+                >Prev</button>
+                {birthdaysPagesWindow.map((num, idx) => num === '...'
+                  ? <span key={`dots${idx}`} className="mx-1 text-gray-300 text-lg px-1 font-bold">…</span>
+                  : <button
+                      key={num}
+                      onClick={() => setBirthdaysPage(num)}
+                      className={`mx-[2px] px-4 py-2 rounded-2xl border-none font-bold text-base transition shadow backdrop-blur ${birthdaysPage===num ? 'bg-sky-500 text-white' : 'bg-white/12 text-white/70 hover:bg-sky-400 hover:text-white'}`}
+                      style={{minWidth:44}}
+                    >{num}</button>
+                )}
+                <button
+                  onClick={() => setBirthdaysPage(p => Math.min(totalBirthdaysPages, p+1))}
+                  disabled={birthdaysPage===totalBirthdaysPages}
+                  className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${birthdaysPage === totalBirthdaysPages ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
+                  style={{minWidth:44}}
+                >Next</button>
               </div>
             )}
           </div>

@@ -56,10 +56,9 @@ const DashboardTab = () => {
   ]);
   const [typeExpanded, setTypeExpanded] = useState(false);
   const [showPaymentsTable, setShowPaymentsTable] = useState(false);
-  const [paymentsPage, setPaymentsPage] = useState(1);
   const rowsPerPage = 10;
-  const [paymentCardExpanded, setPaymentCardExpanded] = useState(false);
-  const [expenseCardExpanded, setExpenseCardExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState('payments'); // 'payments', 'expenses'
+  const [paymentsPage, setPaymentsPage] = useState(1);
   const [expensesPage, setExpensesPage] = useState(1);
 
   const { payments: paymentsQuery, expenses: expensesQuery, customers: customersQuery } = useLazyAdminResources({
@@ -313,50 +312,34 @@ const DashboardTab = () => {
           </div>
         </GlassCard>
       </div>
-      {/* Tattoo Revenue Graph: day-wise or month-wise */}
-      {/* <GlassCard className="h-[355px] bg-white/10 border-white/20 mb-10 flex flex-col">
-        <div className="text-base font-medium text-white/80 mb-2">Tattoo Revenue: {isMonthly ? "Months" : "Days"} — Current vs Previous</div>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={tattooGraphData} margin={{left:8, right:24, top:16, bottom:2}}>
-            <CartesianGrid stroke="#ffffff12" vertical={false} />
-            <XAxis dataKey="label" tick={{fill:'#fff'}} fontSize={12}/>
-            <YAxis tick={{fill:'#fff'}} fontSize={12} tickFormatter={v => `₹${v}`}/>
-            <Tooltip content={<RevenueTooltip />} />
-            <Legend verticalAlign="top" align="right" height={26} iconSize={14} iconType="circle"/>
-            <Line type="monotone" dataKey="current" name={isMonthly ? 'Tattoo (Current Range)' : 'Tattoo (Current Days)'} stroke="#38bdf8" strokeWidth={3} dot={false}/>
-            <Line type="monotone" dataKey="previous" name={isMonthly ? 'Tattoo (Prev Range)' : 'Tattoo (Prev Days)'} stroke="#0284c7" strokeDasharray="5 6" strokeWidth={2} dot={false}/>
-          </LineChart>
-        </ResponsiveContainer>
-      </GlassCard> */}
-      {/* Piercing Revenue Graph: day-wise or month-wise */}
-      {/* <GlassCard className="h-[355px] bg-white/10 border-white/20 mb-14 flex flex-col">
-        <div className="text-base font-medium text-white/80 mb-2">Piercing Revenue: {isMonthly ? "Months" : "Days"} — Current vs Previous</div>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={piercingGraphData} margin={{left:8, right:24, top:16, bottom:2}}>
-            <CartesianGrid stroke="#ffffff12" vertical={false} />
-            <XAxis dataKey="label" tick={{fill:'#fff'}} fontSize={12}/>
-            <YAxis tick={{fill:'#fff'}} fontSize={12} tickFormatter={v => `₹${v}`}/>
-            <Tooltip content={<RevenueTooltip />} />
-            <Legend verticalAlign="top" align="right" height={26} iconSize={14} iconType="circle"/>
-            <Line type="monotone" dataKey="current" name={isMonthly ? 'Piercing (Current Range)' : 'Piercing (Current Days)'} stroke="#fbbf24" strokeWidth={3} dot={false}/>
-            <Line type="monotone" dataKey="previous" name={isMonthly ? 'Piercing (Prev Range)' : 'Piercing (Prev Days)'} stroke="#a16207" strokeDasharray="5 6" strokeWidth={2} dot={false}/>
-          </LineChart>
-        </ResponsiveContainer>
-      </GlassCard> */}
-      <GlassCard
-        className={`transition-all duration-300 w-full mx-auto mt-1 mb-12 px-6 flex flex-col cursor-pointer ${paymentCardExpanded ? 'shadow-2xl scale-[1.01]' : 'shadow'}`}
-        style={{minHeight: paymentCardExpanded ? 470 : 77, maxWidth: '1160px', overflow: 'visible'}}
-        onClick={() => setPaymentCardExpanded(exp => !exp)}
-      >
-        <div className="flex items-center justify-between w-full pb-1 pt-2 select-none">
-          <div className="text-lg font-semibold text-white/90 ml-1">Payment Records</div>
+      {/* Tabs for Payment Records, Expense Records, and Upcoming Bookings */}
+      <GlassCard className="w-full mx-auto mt-1 mb-12 px-6 flex flex-col" style={{maxWidth: '1160px', overflow: 'visible'}}>
+        {/* Tab Buttons */}
+        <div className="flex items-center gap-2 mb-4 pt-2 border-b border-white/20">
           <button
-            onClick={e => {e.stopPropagation(); setPaymentCardExpanded(exp => !exp);}}
-            className="text-2xl ml-1 rounded-full text-white/70 hover:text-sky-400 bg-black/40 hover:bg-black/60 transition p-1 flex items-center justify-center"
-            aria-label={paymentCardExpanded ? "Collapse" : "Expand"}
-          >{paymentCardExpanded ? <FiChevronUp/> : <FiChevronDown/>}</button>
+            onClick={() => setActiveTab('payments')}
+            className={`px-6 py-3 text-base font-semibold transition-all rounded-t-lg ${
+              activeTab === 'payments'
+                ? 'bg-white/20 text-white border-b-2 border-sky-400'
+                : 'text-white/70 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            Payment Records
+          </button>
+          <button
+            onClick={() => setActiveTab('expenses')}
+            className={`px-6 py-3 text-base font-semibold transition-all rounded-t-lg ${
+              activeTab === 'expenses'
+                ? 'bg-white/20 text-white border-b-2 border-sky-400'
+                : 'text-white/70 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            Expense Records
+          </button>
         </div>
-        {paymentCardExpanded && (
+
+        {/* Payment Records Tab Content */}
+        {activeTab === 'payments' && (
           <div className="transition-all duration-200 pt-4">
             <div className="w-full overflow-x-auto pb-2">
               <table className="w-full min-w-[900px] glass-table rounded-2xl overflow-hidden border-collapse">
@@ -393,7 +376,7 @@ const DashboardTab = () => {
               {totalPaymentsPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6 mb-2">
                   <button
-                    onClick={e => { e.stopPropagation(); setPaymentsPage(p => Math.max(1, p-1)); }}
+                    onClick={() => setPaymentsPage(p => Math.max(1, p-1))}
                     disabled={paymentsPage===1}
                     className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${paymentsPage === 1 ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
                     style={{minWidth:44}}
@@ -402,13 +385,13 @@ const DashboardTab = () => {
                     ? <span key={`dots${idx}`} className="mx-1 text-gray-300 text-lg px-1 font-bold">…</span>
                     : <button
                         key={num}
-                        onClick={e => { e.stopPropagation(); setPaymentsPage(num); }}
+                        onClick={() => setPaymentsPage(num)}
                         className={`mx-[2px] px-4 py-2 rounded-2xl border-none font-bold text-base transition shadow backdrop-blur ${paymentsPage===num ? 'bg-sky-500 text-white' : 'bg-white/12 text-white/70 hover:bg-sky-400 hover:text-white'}`}
                         style={{minWidth:44}}
                       >{num}</button>
                   )}
                   <button
-                    onClick={e => { e.stopPropagation(); setPaymentsPage(p => Math.min(totalPaymentsPages, p+1)); }}
+                    onClick={() => setPaymentsPage(p => Math.min(totalPaymentsPages, p+1))}
                     disabled={paymentsPage===totalPaymentsPages}
                     className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${paymentsPage === totalPaymentsPages ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
                     style={{minWidth:44}}
@@ -418,21 +401,9 @@ const DashboardTab = () => {
             </div>
           </div>
         )}
-      </GlassCard>
-      <GlassCard
-        className={`transition-all duration-300 w-full mx-auto mt-1 mb-12 px-6 flex flex-col cursor-pointer ${expenseCardExpanded ? 'shadow-2xl scale-[1.01]' : 'shadow'}`}
-        style={{minHeight: expenseCardExpanded ? 470 : 77, maxWidth: '1160px', overflow: 'visible'}}
-        onClick={() => setExpenseCardExpanded(exp => !exp)}
-      >
-        <div className="flex items-center justify-between w-full pb-1 pt-2 select-none">
-          <div className="text-lg font-semibold text-white/90 ml-1">Expense Records</div>
-          <button
-            onClick={e => {e.stopPropagation(); setExpenseCardExpanded(exp => !exp);}}
-            className="text-2xl ml-1 rounded-full text-white/70 hover:text-sky-400 bg-black/40 hover:bg-black/60 transition p-1 flex items-center justify-center"
-            aria-label={expenseCardExpanded ? "Collapse" : "Expand"}
-          >{expenseCardExpanded ? <FiChevronUp/> : <FiChevronDown/>}</button>
-        </div>
-        {expenseCardExpanded && (
+
+        {/* Expense Records Tab Content */}
+        {activeTab === 'expenses' && (
           <div className="transition-all duration-200 pt-4">
             <div className="w-full overflow-x-auto pb-2">
               <table className="w-full min-w-[650px] glass-table rounded-2xl overflow-hidden border-collapse">
@@ -460,7 +431,7 @@ const DashboardTab = () => {
               {totalExpensesPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6 mb-2">
                   <button
-                    onClick={e => { e.stopPropagation(); setExpensesPage(p => Math.max(1, p-1)); }}
+                    onClick={() => setExpensesPage(p => Math.max(1, p-1))}
                     disabled={expensesPage===1}
                     className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${expensesPage === 1 ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
                     style={{minWidth:44}}
@@ -469,13 +440,13 @@ const DashboardTab = () => {
                     ? <span key={`dots${idx}`} className="mx-1 text-gray-300 text-lg px-1 font-bold">…</span>
                     : <button
                         key={num}
-                        onClick={e => { e.stopPropagation(); setExpensesPage(num); }}
+                        onClick={() => setExpensesPage(num)}
                         className={`mx-[2px] px-4 py-2 rounded-2xl border-none font-bold text-base transition shadow backdrop-blur ${expensesPage===num ? 'bg-sky-500 text-white' : 'bg-white/12 text-white/70 hover:bg-sky-400 hover:text-white'}`}
                         style={{minWidth:44}}
                       >{num}</button>
                   )}
                   <button
-                    onClick={e => { e.stopPropagation(); setExpensesPage(p => Math.min(totalExpensesPages, p+1)); }}
+                    onClick={() => setExpensesPage(p => Math.min(totalExpensesPages, p+1))}
                     disabled={expensesPage===totalExpensesPages}
                     className={`px-4 py-2 rounded-2xl font-bold text-base border-none shadow backdrop-blur bg-white/10 transition-all duration-100 ${expensesPage === totalExpensesPages ? 'opacity-60 text-white bg-white/20 cursor-not-allowed' : 'text-white hover:bg-sky-100/30 hover:text-sky-300'}`}
                     style={{minWidth:44}}
@@ -485,6 +456,7 @@ const DashboardTab = () => {
             </div>
           </div>
         )}
+
       </GlassCard>
     </>
   );

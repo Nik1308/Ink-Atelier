@@ -5,7 +5,7 @@ import { FiHome, FiUsers, FiFileText, FiCreditCard, FiBarChart2, FiMessageCircle
 
 const NAV_LINKS = [
   { label: 'Dashboard', key: 'dashboard', icon: <FiHome /> },
-  { label: 'Leads', key: 'leads', icon: <FiUserPlus /> },
+  { label: 'Leads & More', key: 'leads', icon: <FiUserPlus /> },
   { label: 'Customers', key: 'customers', icon: <FiUsers /> },
   { label: 'Consents', key: 'consents', icon: <FiFileText /> },
   { label: 'Payments', key: 'payments', icon: <FiCreditCard /> },
