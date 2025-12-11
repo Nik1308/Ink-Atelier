@@ -349,7 +349,7 @@ Your birthday month deserves fresh ink or a new piercing!`;
 
   // Upcoming birthdays data processing
   const getUpcomingBirthdays = () => {
-    const today = new Date();
+    const today = startOfDay(new Date()); // Normalize today to midnight local time
     
     return (allCustomers || []).filter(customer => {
       // Handle both date_of_birth and dateOfBirth formats
@@ -357,13 +357,33 @@ Your birthday month deserves fresh ink or a new piercing!`;
       if (!dob) return false;
       
       try {
-        // Parse the date of birth (assuming format like "2000-03-14" or similar)
-        const birthDate = new Date(dob);
+        // Parse the date string to extract year, month, day
+        // Handle ISO format (YYYY-MM-DD) or ISO timestamp (YYYY-MM-DDTHH:mm:ss.sssZ)
+        let birthDate;
+        if (typeof dob === 'string') {
+          // Extract date part from ISO timestamp (e.g., "1999-11-01T00:00:00.000Z" -> "1999-11-01")
+          const datePart = dob.split('T')[0];
+          if (datePart.includes('-')) {
+            // Parse ISO format string (YYYY-MM-DD) as local date
+            const [year, month, day] = datePart.split('-').map(Number);
+            birthDate = new Date(year, month - 1, day); // month is 0-indexed
+          } else {
+            // Fallback to Date constructor
+            birthDate = new Date(dob);
+          }
+        } else {
+          // Fallback to Date constructor
+          birthDate = new Date(dob);
+        }
+        
         if (isNaN(birthDate.getTime())) return false;
         
-        // Get this year's birthday
-        const thisYearBirthday = setYear(birthDate, getYear(today));
-        const nextYearBirthday = setYear(birthDate, getYear(today) + 1);
+        // Normalize birth date to midnight local time
+        birthDate = startOfDay(birthDate);
+        
+        // Get this year's birthday (normalized to midnight)
+        const thisYearBirthday = startOfDay(setYear(birthDate, getYear(today)));
+        const nextYearBirthday = startOfDay(setYear(birthDate, getYear(today) + 1));
         
         // Check if birthday is within next 15 days (this year or next year)
         const daysUntilThisYear = differenceInDays(thisYearBirthday, today);
@@ -377,10 +397,32 @@ Your birthday month deserves fresh ink or a new piercing!`;
       }
     }).map(customer => {
       const dob = customer.date_of_birth || customer.dateOfBirth;
-      const birthDate = new Date(dob);
-      const thisYearBirthday = setYear(birthDate, getYear(new Date()));
-      const nextYearBirthday = setYear(birthDate, getYear(new Date()) + 1);
-      const today = new Date();
+      
+      // Parse the date string to extract year, month, day
+      // Handle ISO format (YYYY-MM-DD) or ISO timestamp (YYYY-MM-DDTHH:mm:ss.sssZ)
+      let birthDate;
+      if (typeof dob === 'string') {
+        // Extract date part from ISO timestamp (e.g., "1999-11-01T00:00:00.000Z" -> "1999-11-01")
+        const datePart = dob.split('T')[0];
+        if (datePart.includes('-')) {
+          // Parse ISO format string (YYYY-MM-DD) as local date
+          const [year, month, day] = datePart.split('-').map(Number);
+          birthDate = new Date(year, month - 1, day); // month is 0-indexed
+        } else {
+          // Fallback to Date constructor
+          birthDate = new Date(dob);
+        }
+      } else {
+        // Fallback to Date constructor
+        birthDate = new Date(dob);
+      }
+      
+      // Normalize birth date to midnight local time
+      birthDate = startOfDay(birthDate);
+      
+      // Get this year's and next year's birthdays (normalized to midnight)
+      const thisYearBirthday = startOfDay(setYear(birthDate, getYear(today)));
+      const nextYearBirthday = startOfDay(setYear(birthDate, getYear(today) + 1));
       
       const daysUntilThisYear = differenceInDays(thisYearBirthday, today);
       const daysUntilNextYear = differenceInDays(nextYearBirthday, today);
