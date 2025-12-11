@@ -53,7 +53,7 @@ const handleCustomerLookup = async (customerData, setError) => {
           name: customerData.name,
           date_of_birth: customerData.dob,
           phone: formattedPhone,
-          email: customerData.email,
+          email: customerData.email && customerData.email.trim() ? customerData.email.trim() : null,
           address: customerData.address,
           heard_about_us: customerData.heardAboutUs,
         }),

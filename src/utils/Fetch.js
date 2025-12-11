@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAuthToken } from "./authUtils";
+import { getAuthToken, clearAuthData } from "./authUtils";
 
 /**
  * Usage:
@@ -30,6 +30,20 @@ const Fetch = ({ url, options, children }) => {
     
     fetch(url, fetchOptions)
       .then((res) => {
+        // Handle 401/403 unauthorized/forbidden errors
+        if (res.status === 401 || res.status === 403) {
+          // Clear all authentication data
+          clearAuthData();
+          
+          // Clear all localStorage
+          localStorage.clear();
+          
+          // Redirect to login page
+          window.location.href = '/login';
+          
+          throw new Error('Unauthorized. Please login again.');
+        }
+        
         if (!res.ok) throw new Error(`Error: ${res.status}`);
         return res.json();
       })
@@ -121,6 +135,27 @@ export async function fetchApi(url, options = {}) {
     }
     
     if (!res.ok) {
+      // Handle 401/403 unauthorized/forbidden errors
+      if (res.status === 401 || res.status === 403) {
+        console.error('❌ Unauthorized/Forbidden - Logging out user');
+        console.groupEnd();
+        
+        // Clear all authentication data
+        clearAuthData();
+        
+        // Clear all localStorage
+        localStorage.clear();
+        
+        // Redirect to login page
+        window.location.href = '/login';
+        
+        // Throw error to prevent further execution
+        const error = new Error('Unauthorized. Please login again.');
+        error.status = res.status;
+        error.statusText = res.statusText;
+        throw error;
+      }
+      
       let message = `Error: ${res.status} ${res.statusText}`;
       let errorData = null;
       
