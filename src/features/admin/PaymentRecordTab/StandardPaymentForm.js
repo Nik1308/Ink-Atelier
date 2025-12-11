@@ -4,6 +4,7 @@ import { validatePhone, validateRequired, validateNumber } from '../../../utils/
 import FormField from '../../forms/components/FormField';
 
 const initialStandardForm = {
+  name: '',
   phone: '',
   date: new Date().toISOString().slice(0, 10),
   amount: '',
@@ -32,7 +33,9 @@ const StandardPaymentForm = () => {
   };
 
   const validate = () => {
-    if (form.phone && !validatePhone(form.phone)) return 'Enter a valid 10-digit phone number.';
+    if (!validateRequired(form.name)) return 'Customer name is required.';
+    if (!validateRequired(form.phone)) return 'Phone number is required.';
+    if (!validatePhone(form.phone)) return 'Enter a valid 10-digit phone number.';
     if (!validateRequired(form.date)) return 'Date is required.';
     if (!validateNumber(form.amount)) return 'Enter a valid amount.';
     if (!validateRequired(form.paymentType)) return 'Select a payment type.';
@@ -52,10 +55,7 @@ const StandardPaymentForm = () => {
     }
     setLoading(true);
     try {
-      let customerId = null;
-      if (form.phone) {
-        customerId = await handleCustomerLookup(form.phone, form.name);
-      }
+      const customerId = await handleCustomerLookup(form.phone, form.name);
       await fetchApi(PAYMENT_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,12 +80,24 @@ const StandardPaymentForm = () => {
   return (
     <form className="space-y-6 w-full max-w-[400px] mx-auto" onSubmit={handleSubmit}>
       <FormField
+        label="Customer Name"
+        name="name"
+        type="text"
+        value={form.name}
+        onChange={handleChange}
+        required
+        placeholder="Enter customer name"
+        inputClassName="w-full max-w-[400px]"
+        labelClassName="text-white font-semibold"
+      />
+      <FormField
         label="Customer Phone Number"
         name="phone"
         type="phone"
         value={form.phone}
         onChange={handleChange}
-        placeholder="10-digit mobile number (optional)"
+        required
+        placeholder="10-digit mobile number"
         inputClassName="w-full max-w-[400px]"
         labelClassName="text-white font-semibold"
       />

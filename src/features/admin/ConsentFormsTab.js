@@ -2,13 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import GlassCard from './components/GlassCard';
 import DateRangeSelector from '../common/ui/DateRangeSelector';
-import { PAYMENT_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL } from '../../utils/apiUrls';
-import { fetchApi } from '../../utils/Fetch';
-import { getCustomerById, handleCustomerLookup } from '../../utils/customerUtils';
-import FormField from '../forms/components/FormField';
 import { startOfDay, endOfDay, isWithinInterval, isSameDay } from 'date-fns';
-import { FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
-import GlassModal from '../common/ui/GlassModal';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import PaymentDrawer from './ConsentFormsTab/PaymentDrawer';
 
 function fieldTruthy(val) {
   if (typeof val === 'boolean') return val;
@@ -93,7 +89,7 @@ const ConsentFormsTab = () => {
   const [page, setPage] = useState(1);
   const [expandedFormId, setExpandedFormId] = useState(null);
   const [columns, setColumns] = useState(getColumns());
-  const [modalForm, setModalForm] = useState({ open: false, form: null, error: null, loading: false, success: null });
+  const [paymentDrawer, setPaymentDrawer] = useState({ open: false, form: null, customer: null });
   const [patchedIds, setPatchedIds] = useState({}); // { [form.id]: true } to reactively disable after PATCH if not in the original data
 
   React.useEffect(() => {
@@ -144,91 +140,22 @@ const ConsentFormsTab = () => {
   React.useEffect(() => { setPage(1); setExpandedFormId(null); }, [dateRange, formType]);
   React.useEffect(() => { if (page > totalPages) setPage(totalPages || 1); }, [page, totalPages]);
 
-  const openPaymentModal = (form, customer) => {
-    // Auto-fill defaults
-    const phone = (customer && customer.phone) ? customer.phone : '';
-    const service = form.type === 'tattoo'
-      ? `tattoo`
-      : `piercing`;
-    const dateFromForm = form.tattooDate || form.piercingDate;
-    const date = dateFromForm ? formatDateForInput(dateFromForm) : new Date().toISOString().split('T')[0];
-    setModalForm({
+  const openPaymentDrawer = (form, customer) => {
+    setPaymentDrawer({
       open: true,
-      form: {
-        phone,
-        service,
-        date,
-        amount: '',
-        gst: '',
-        paymentType: '',
-      },
-      error: null,
-      loading: false,
-      success: null,
-      c_id: customer?.id || form.customerId,
-      targetForm: form,
+      form: form,
+      customer: customer,
     });
   };
-  const closePaymentModal = () => setModalForm({ open: false, form: null, error: null, loading: false, success: null });
 
-  const handleModalChange = (e) => {
-    const { name, value } = e.target;
-    setModalForm((mf) => ({ ...mf, form: { ...mf.form, [name]: value }, error: null, success: null }));
+  const closePaymentDrawer = () => {
+    setPaymentDrawer({ open: false, form: null, customer: null });
   };
-  const handlePaymentSubmit = async (e) => {
-    e.preventDefault();
-    setModalForm((mf) => ({ ...mf, error: null, loading: true, success: null }));
-    const { phone, service, date, amount, gst, paymentType } = modalForm.form || {};
-    // Validation
-    if (!phone || !service || !date || !amount || !gst || !paymentType) {
-      setModalForm((mf) => ({ ...mf, error: 'All fields (Amount, GST, Payment Type) are required.', loading: false }));
-      return;
-    }
-    let customerId = modalForm.c_id;
-    // Try to get customer ID by phone if not set
-    if (!customerId && phone) {
-      customerId = await handleCustomerLookup(phone.replace('+91', ''));
-      if (!customerId) {
-        setModalForm(mf => ({ ...mf, error: 'Could not find or create customer for payment', loading: false }));
-        return;
-      }
-    }
-    try {
-      await fetchApi(PAYMENT_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_id: customerId,
-          payment_date: date,
-          amount: Number(amount),
-          gst: Number(gst),
-          payment_type: paymentType,
-          service: service,
-        })
-      });
-      // PATCH consent form for payment = true
-      if (modalForm.targetForm) {
-        const form = modalForm.targetForm;
-        let patchUrl = '';
-        if (form.type === 'tattoo') patchUrl = `${TATTOO_CONSENT_FORM_API_URL}/${form.id}`;
-        else if (form.type === 'piercing') patchUrl = `${PIERCING_CONSENT_FORM_API_URL}/${form.id}`;
-        if (patchUrl) {
-          await fetchApi(patchUrl, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ payment: true })
-          });
-        }
-        const formUniqueId = getFormUniqueId(form);
-        setPatchedIds((ids) => ({...ids, [formUniqueId]: true}));
-      }
-      setModalForm(mf => ({ ...mf, loading: false, error: null, success: 'Payment recorded successfully!' }));
-      // Close modal after 1.5 seconds to show success message
-      setTimeout(() => {
-        closePaymentModal();
-      }, 1500);
-    } catch (err) {
-      setModalForm(mf => ({ ...mf, loading: false, error: 'Failed to record payment. Try again.' }));
+
+  const handlePaymentSuccess = () => {
+    if (paymentDrawer.form) {
+      const formUniqueId = getFormUniqueId(paymentDrawer.form);
+      setPatchedIds((ids) => ({...ids, [formUniqueId]: true}));
     }
   };
 
@@ -304,7 +231,7 @@ const ConsentFormsTab = () => {
                     <button 
                       type="button" 
                       className={`px-4 py-1.5 rounded-lg font-semibold border-none bg-white text-black text-xs tracking-tight shadow hover:bg-gray-100 focus:outline-none ${((form.payment || patchedIds[uniqueId]) ? 'opacity-50 cursor-not-allowed' : '')}`} 
-                      onClick={e => { if (!form.payment && !patchedIds[uniqueId]) { e.stopPropagation(); openPaymentModal(form, customer); } }}
+                      onClick={e => { if (!form.payment && !patchedIds[uniqueId]) { e.stopPropagation(); openPaymentDrawer(form, customer); } }}
                       disabled={form.payment === true || patchedIds[uniqueId] === true}
                     >
                       {form.payment === true || patchedIds[uniqueId] === true ? 'Payment Recorded' : 'Record Payment'}
@@ -387,30 +314,13 @@ const ConsentFormsTab = () => {
           >Next</button>
         </div>
       )}
-      <GlassModal open={modalForm.open} onClose={closePaymentModal}>
-        <h2 className="text-xl text-white font-bold mb-2">Record Payment</h2>
-        <form className="w-full mt-2 flex flex-col gap-3" onSubmit={handlePaymentSubmit}>
-          <FormField label="Mobile Number" labelClassName="text-white/90" name="phone" type="phone" value={(modalForm.form?.phone || '').replace(/^\+91/, '')} required inputClassName="bg-white/10 text-white border-white/20" readOnly />
-          <FormField label="Service" labelClassName="text-white/90" name="service" type="text" value={modalForm.form?.service || ''} required inputClassName="bg-white/10 text-white border-white/20" readOnly />
-          <FormField label="Date" labelClassName="text-white/90" name="date" type="date" value={modalForm.form?.date || ''} required inputClassName="bg-white/10 text-white border-white/20" readOnly />
-          <FormField label="Amount (₹)" labelClassName="text-white/90" name="amount" type="number" value={modalForm.form?.amount || ''} required min={1} inputClassName="bg-white/10 text-white border-white/20" onChange={handleModalChange} />
-          <FormField label="GST (₹)" labelClassName="text-white/90" name="gst" type="number" value={modalForm.form?.gst || ''} required min={0} inputClassName="bg-white/10 text-white border-white/20" onChange={handleModalChange} />
-          <FormField label="Payment Type" labelClassName="text-white/90" name="paymentType" type="select" value={modalForm.form?.paymentType || ''} required options={[
-            { value: 'UPI', label: 'UPI' },
-            { value: 'Cash', label: 'Cash' },
-            { value: 'Card', label: 'Card' },
-          ]} inputClassName="bg-white/10 text-white border-white/20" onChange={handleModalChange} />
-          {modalForm.error && <div className="bg-rose-100 text-red-800 px-3 py-2 my-1 w-full rounded text-sm font-semibold">{modalForm.error}</div>}
-          {modalForm.success && <div className="bg-green-100 text-green-800 px-3 py-2 my-1 w-full rounded text-sm font-semibold">{modalForm.success}</div>}
-          <button
-            type="submit"
-            disabled={modalForm.loading}
-            className="w-full mt-1 py-2 text-lg font-bold rounded-lg bg-white text-black hover:bg-gray-100 disabled:opacity-50 shadow"
-          >
-            {modalForm.loading ? 'Recording...' : 'Submit Payment'}
-          </button>
-        </form>
-      </GlassModal>
+      <PaymentDrawer
+        open={paymentDrawer.open}
+        onClose={closePaymentDrawer}
+        form={paymentDrawer.form}
+        customer={paymentDrawer.customer}
+        onSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };
