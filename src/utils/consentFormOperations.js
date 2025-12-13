@@ -61,7 +61,9 @@ const handleCustomerLookup = async (customerData, setError) => {
       return newCustomer.id;
     }
   } catch (error) {
-    const errorMessage = "Customer lookup/creation failed: " + error.message;
+    // Check for response message in various possible locations
+    const apiMessage = error.response?.message || error.data?.message || error.data?.error || error.message;
+    const errorMessage = "Customer lookup/creation failed: " + apiMessage;
     setError(errorMessage);
     throw new Error(errorMessage);
   }
@@ -85,7 +87,9 @@ const uploadImage = async (imageFile, setError) => {
       body: imageForm,
     });
   } catch (error) {
-    const errorMessage = "Image upload failed: " + error.message;
+    // Check for response.message first, then fall back to error.message
+    const apiMessage = error.response?.message || error.data?.message || error.data?.error || error.message;
+    const errorMessage = "Image upload failed: " + apiMessage;
     setError(errorMessage);
     throw new Error(errorMessage);
   }
