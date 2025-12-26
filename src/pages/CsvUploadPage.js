@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PAYMENT_API_URL, CUSTOMER_API_URL, fetchApi } from '../utils';
+import { normalizePhoneNumber } from '../utils/phoneUtils';
 
 function downloadCsvFromRows(rows, filename = 'failed_entries.csv') {
   if (!rows.length) return;
@@ -66,21 +67,8 @@ const CsvUploadPage = () => {
 
   const formatPhoneNumber = (phone) => {
     if (!phone) return null;
-    // Remove any non-digit characters
-    const cleaned = phone.replace(/\D/g, '');
-    // If it's 10 digits, add +91 prefix
-    if (cleaned.length === 10) {
-      return `+91${cleaned}`;
-    }
-    // If it already has country code, return as is
-    if (cleaned.startsWith('91') && cleaned.length === 12) {
-      return `+${cleaned}`;
-    }
-    // If it's 11 digits and starts with 0, remove 0 and add +91
-    if (cleaned.length === 11 && cleaned.startsWith('0')) {
-      return `+91${cleaned.substring(1)}`;
-    }
-    return null;
+    // Use the international phone normalization utility
+    return normalizePhoneNumber(phone);
   };
 
   const convertDateFormat = (dateString) => {

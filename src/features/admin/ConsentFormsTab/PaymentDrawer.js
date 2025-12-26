@@ -189,7 +189,8 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
       
       // Try to get customer ID by phone if not set
       if (!customerId && phone) {
-        customerId = await handleCustomerLookup(phone.replace('+91', ''));
+        // Phone should already be in international format, use as is
+        customerId = await handleCustomerLookup(phone);
         if (!customerId) {
           setError('Could not find or create customer for payment');
           setLoading(false);
@@ -274,7 +275,7 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
                 labelClassName="text-gray-700 font-semibold"
                 name="phone"
                 type="phone"
-                value={(paymentForm.phone || '').replace(/^\+91/, '')}
+                value={paymentForm.phone || ''}
                 required
                 inputClassName="bg-white text-gray-900 border-gray-300"
                 readOnly

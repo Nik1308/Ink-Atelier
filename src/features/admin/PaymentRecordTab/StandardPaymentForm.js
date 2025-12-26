@@ -113,7 +113,7 @@ const StandardPaymentForm = () => {
   const validate = () => {
     if (!validateRequired(form.name)) return 'Customer name is required.';
     if (!validateRequired(form.phone)) return 'Phone number is required.';
-    if (!validatePhone(form.phone)) return 'Enter a valid 10-digit phone number.';
+    if (!validatePhone(form.phone)) return 'Enter a valid phone number with country code (e.g., +919876543210).';
     if (!validateRequired(form.date)) return 'Date is required.';
     if (!validateRequired(form.paymentType)) return 'Select a payment type.';
     if (!validateRequired(form.service)) return 'Select a service.';
@@ -190,7 +190,7 @@ const StandardPaymentForm = () => {
         value={form.phone}
         onChange={handleChange}
         required
-        placeholder="10-digit mobile number"
+        placeholder="Country code and number (e.g., 919876543210)"
         inputClassName="w-full"
         labelClassName="text-white font-semibold"
       />

@@ -1,5 +1,11 @@
+import { validateInternationalPhone, normalizePhoneNumber } from './phoneUtils';
+
 export function validatePhone(phone) {
-  return /^\d{10}$/.test(phone);
+  // Support both old 10-digit format (for backward compatibility) and international format
+  if (/^\d{10}$/.test(phone)) {
+    return true; // Old format - will be normalized to +91
+  }
+  return validateInternationalPhone(phone);
 }
 
 export function validateRequired(value) {

@@ -362,7 +362,7 @@ const DashboardTab = () => {
                     return (
                       <tr key={p.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
                         <td className="px-4 py-3 text-left font-bold text-white">{customer.name || 'Unknown'}</td>
-                        <td className="px-4 py-3 text-left font-mono text-sky-200">{(customer.phone || '').replace(/^\+91/, '')}</td>
+                        <td className="px-4 py-3 text-left font-mono text-sky-200">{customer.phone || ''}</td>
                         <td className="px-4 py-3 text-center text-white/90">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
                         <td className="px-4 py-3 text-center font-semibold">₹{parseFloat(p.amount||0).toLocaleString()}</td>
                         <td className="px-4 py-3 text-center">{p.service || '-'}</td>
