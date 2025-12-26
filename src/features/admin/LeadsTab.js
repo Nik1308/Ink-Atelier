@@ -12,6 +12,7 @@ import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import usePagination from '../common/hooks/usePagination';
 import { startOfDay, endOfDay, isWithinInterval, isSameDay, startOfMonth, format, addDays, differenceInDays, parse, getYear, setYear } from 'date-fns';
 import GlassCard from './components/GlassCard';
+import { normalizePhoneNumber } from '../../utils/phoneUtils';
 
 const LeadsTab = () => {
   const { leads, advancePayments: advancePaymentsQuery, customers: customersQuery } = useLazyAdminResources({
@@ -303,19 +304,15 @@ const LeadsTab = () => {
   // Function to send WhatsApp birthday message
   const sendWhatsAppMessage = (customer) => {
     const phone = customer.phone || '';
-    // Remove all non-digit characters
-    let cleanPhone = phone.replace(/\D/g, '');
-    
-    // If phone starts with 91 (India country code), keep it; otherwise add 91
-    if (cleanPhone.length === 10) {
-      cleanPhone = '91' + cleanPhone;
-    } else if (cleanPhone.startsWith('91') && cleanPhone.length === 12) {
-      // Already has country code
-      cleanPhone = cleanPhone;
-    } else if (cleanPhone.length < 10) {
-      alert('Invalid phone number');
+    // Normalize phone number to international format
+    const normalizedPhone = normalizePhoneNumber(phone);
+    if (!normalizedPhone) {
+      alert('Invalid phone number format');
       return;
     }
+    
+    // Remove + for WhatsApp URL (WhatsApp expects format without +)
+    const cleanPhone = normalizedPhone.replace(/^\+/, '');
     
     // Check if birthday is today (daysUntil === 0)
     const isToday = customer.daysUntil === 0;
@@ -667,7 +664,7 @@ Your birthday month deserves fresh ink or a new piercing!`;
               value={formData.phone}
               onChange={handleChange}
               required
-              placeholder="10-digit mobile number"
+              placeholder="Country code and number (e.g., 919876543210)"
               inputClassName="w-full bg-white/10 text-white border-white/30 placeholder:text-white/50"
               labelClassName="text-white font-semibold"
             />
@@ -904,7 +901,7 @@ Your birthday month deserves fresh ink or a new piercing!`;
                   return (
                     <tr key={b.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
                       <td className="px-4 py-3 text-left font-bold text-white">{customer.name || 'Unknown'}</td>
-                      <td className="px-4 py-3 text-left font-mono text-sky-200">{(customer.phone || '').replace(/^\+91/, '')}</td>
+                      <td className="px-4 py-3 text-left font-mono text-sky-200">{customer.phone || ''}</td>
                       <td className="px-4 py-3 text-center text-white/90">{b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '-'}</td>
                       <td className="px-4 py-3 text-center font-semibold">{b.advanceAmount ? `₹${parseFloat(b.advanceAmount).toLocaleString()}` : '—'}</td>
                       <td className="px-4 py-3 text-center font-semibold">{b.dueAmount ? `₹${parseFloat(b.dueAmount).toLocaleString()}` : '—'}</td>
@@ -974,7 +971,7 @@ Your birthday month deserves fresh ink or a new piercing!`;
                   return (
                     <tr key={customer.id || idx} className="bg-white/5 border-b border-white/15 last:border-b-0 text-white hover:bg-white/10 transition">
                       <td className="px-4 py-3 text-left font-bold text-white">{customer.name || 'Unknown'}</td>
-                      <td className="px-4 py-3 text-left font-mono text-sky-200">{(customer.phone || '').replace(/^\+91/, '')}</td>
+                      <td className="px-4 py-3 text-left font-mono text-sky-200">{customer.phone || ''}</td>
                       <td className="px-4 py-3 text-center text-white/90">
                         {customer.date_of_birth ? format(new Date(customer.date_of_birth), 'MMM d, yyyy') : '—'}
                       </td>

@@ -7,10 +7,14 @@ import {
   getTattooAftercareMessage,
   getPiercingAftercareMessage,
   getReviewWhatsappMessage,
-  getAdvancePaymentConfirmationMessage
+  getAdvancePaymentConfirmationMessage,
+  getAftercarePdfUrl
 } from '../../utils/constants';
 import GlassCard from './components/GlassCard';
 import { useLazyAdminResources } from './hooks/useLazyAdminResources';
+import { API_BASE_URL } from '../../utils/apiUrls';
+import { fetchApi } from '../../utils/Fetch';
+import { getAuthToken, clearAuthData } from '../../utils/authUtils';
 
 function ButtonWhatsApp({ phone, message, label }) {
   const [loading, setLoading] = React.useState(false);
@@ -32,6 +36,81 @@ function ButtonWhatsApp({ phone, message, label }) {
       style={{ minWidth: 140 }}
     >
       {loading ? 'Opening...' : label}
+    </button>
+  );
+}
+
+function AftercareAndInvoiceButton({ invoiceId, phone, service, clientName }) {
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
+
+  const handleSend = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Get aftercare PDF URL
+      const aftercareUrl = getAftercarePdfUrl(service);
+      
+      // Get invoice URL if invoice exists
+      let invoiceUrl = null;
+      if (invoiceId) {
+        try {
+          const response = await fetchApi(`${API_BASE_URL}/payment/invoice/${invoiceId}/download`, {
+            method: 'GET',
+          });
+          invoiceUrl = response?.downloadUrl || null;
+        } catch (err) {
+          console.warn('Failed to fetch invoice URL:', err);
+          // Continue without invoice URL
+        }
+      }
+
+      // Build the combined message
+      let serviceLabel = '';
+      let thankYouMessage = '';
+      
+      if (service === 'tattoo') {
+        serviceLabel = 'Tattoo Aftercare Guide';
+        thankYouMessage = 'Thank you for choosing INK ATELIER for your tattoo — we truly appreciate your trust! ✨';
+      } else if (service === 'piercing') {
+        serviceLabel = 'Piercing Aftercare Guide';
+        thankYouMessage = 'Thank you for choosing INK ATELIER for your piercing — we truly appreciate your trust! ✨';
+      } else {
+        serviceLabel = 'Aftercare Guide';
+        thankYouMessage = 'Thank you for choosing INK ATELIER — we truly appreciate your trust! ✨';
+      }
+
+      let message = `Hi ${clientName},\n\n${thankYouMessage}\n\nTo help ensure a smooth, safe, and comfortable healing process, please take a moment to carefully follow the aftercare instructions in the PDF below:\n\n${serviceLabel}: ${aftercareUrl || 'Aftercare PDF'}`;
+
+      // Add invoice link if available
+      if (invoiceUrl) {
+        message += `\n\nYou can find your invoice here for your reference: ${invoiceUrl}`;
+      }
+
+      // Add closing message
+      message += `\n\nIf you have any questions during the healing process or need assistance, feel free to reach out — we're always happy to help.\n\nWarm regards,\nINK ATELIER\nTattoo & Piercing Studio`;
+
+      // Format phone number for WhatsApp
+      const formattedPhone = phone.replace(/[^0-9]/g, '');
+      
+      // Open WhatsApp with the message
+      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    } catch (err) {
+      setError('Failed to send');
+      console.error('Aftercare and invoice send error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      className="px-4 py-1.5 rounded-xl bg-white text-black text-xs font-bold shadow hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      onClick={handleSend}
+      disabled={loading}
+      title={error || 'Send Aftercare & Invoice'}
+    >
+      {loading ? 'Loading...' : error || 'Send Aftercare & Invoice'}
     </button>
   );
 }
@@ -91,7 +170,7 @@ const MessagesTab = () => {
               <th className="px-2 py-3 text-left font-bold">Phone</th>
               {/* <th className="px-2 py-3 text-left font-bold">Date</th> */}
               <th className="px-2 py-3 text-left font-bold">Amount</th>
-              <th className="px-2 py-3 text-center font-bold">Aftercare</th>
+              <th className="px-2 py-3 text-center font-bold">Aftercare & Invoice</th>
               <th className="px-2 py-3 text-center font-bold">Review</th>
               <th className="px-2 py-3 text-center font-bold">Advance Payment</th>
             </tr>
@@ -125,10 +204,11 @@ const MessagesTab = () => {
                   </td>
                   <td className="px-2 py-3 text-center">
                     {msg.paymentType !== 'Advance' && (
-                      <ButtonWhatsApp
+                      <AftercareAndInvoiceButton
+                        invoiceId={msg.invoice?.zohoInvoiceId && msg.invoice?.id ? msg.invoice.id : null}
                         phone={getCustomerPhone(customers?.data || [], msg.customerId)}
-                        message={msg.service === 'tattoo' ? getTattooAftercareMessage(getCustomerName(customers?.data || [], msg.customerId)) : (msg.service === 'piercing' ? getPiercingAftercareMessage(getCustomerName(customers?.data || [], msg.customerId)) : `Hi${getCustomerName(customers?.data || [], msg.customerId) ? ' ' + getCustomerName(customers?.data || [], msg.customerId) : ''},\n\nAftercare instructions will be provided by your artist.`)}
-                        label="Aftercare Message"
+                        service={msg.service}
+                        clientName={getCustomerName(customers?.data || [], msg.customerId)}
                       />
                     )}
                   </td>

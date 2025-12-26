@@ -1,5 +1,6 @@
 import { fetchApi } from './Fetch';
 import { CUSTOMER_API_URL } from './apiUrls';
+import { normalizePhoneNumber } from './phoneUtils';
 
 /**
  * Looks up a customer by phone, or creates a new one if not found.
@@ -10,7 +11,10 @@ import { CUSTOMER_API_URL } from './apiUrls';
 export async function handleCustomerLookup(phone, name = '') {
   if (!phone) return null;
   try {
-    const formattedPhone = phone.startsWith('+91') ? phone : `+91${phone}`;
+    const formattedPhone = normalizePhoneNumber(phone);
+    if (!formattedPhone) {
+      throw new Error('Invalid phone number format. Please enter with country code (e.g., +91xxxxxxxxxx)');
+    }
     const customers = await fetchApi(CUSTOMER_API_URL, { method: 'GET' });
     const existingCustomer = Array.isArray(customers)
       ? customers.find(c => c.phone === formattedPhone)

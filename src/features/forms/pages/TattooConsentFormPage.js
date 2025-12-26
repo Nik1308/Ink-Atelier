@@ -7,6 +7,7 @@ import FormField from '../components/FormField';
 import FormSection from '../components/FormSection';
 import RadioGroup from '../components/RadioGroup';
 import SEO from '../../common/ui/SEO';
+import { normalizePhoneNumber, validateInternationalPhone } from '../../../utils/phoneUtils';
 
 function formatDateForInput(date) {
   if (!date) return '';
@@ -45,7 +46,12 @@ const initialForm = {
   agree: false,
 };
 
-const isValidPhone = (value) => /^\d{0,10}$/.test(value);
+// Allow international phone format (with + and country code)
+const isValidPhone = (value) => {
+  if (!value) return true; // Allow empty during typing
+  // Allow digits, +, spaces, hyphens, parentheses for international format
+  return /^[\d\s\+\-\(\)]{0,20}$/.test(value);
+};
 
 const TattooConsentFormPage = () => {
   const [form, setForm] = useState(initialForm);
@@ -79,7 +85,10 @@ const TattooConsentFormPage = () => {
 
   // Validation functions for each step
   const validateStep1 = () => {
-    return form.phone && form.phone.length === 10;
+    if (!form.phone) return false;
+    // Support both old 10-digit format and new international format
+    if (/^\d{10}$/.test(form.phone)) return true; // Old format
+    return validateInternationalPhone(normalizePhoneNumber(form.phone) || form.phone);
   };
 
   const validateStep2 = () => {
@@ -118,7 +127,7 @@ const TattooConsentFormPage = () => {
     switch (step) {
       case 1:
         isValid = validateStep1();
-        errorMessage = 'Please enter a valid 10-digit phone number.';
+        errorMessage = 'Please enter a valid phone number with country code (e.g., +919876543210 or 919876543210).';
         break;
       case 2:
         isValid = validateStep2();
@@ -158,9 +167,9 @@ const TattooConsentFormPage = () => {
 
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
-  // Phone step logic
+  // Phone step logic - allow international format
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "");
+    const value = e.target.value;
     if (!isValidPhone(value)) return;
     setForm((f) => ({ ...f, phone: value }));
   };
@@ -175,9 +184,14 @@ const TattooConsentFormPage = () => {
     
     utils.fetchApi(CUSTOMER_API_URL, { method: "GET" })
       .then(customers => {
-        const fullPhone = '+91' + form.phone;
+        const normalizedPhone = normalizePhoneNumber(form.phone);
+        if (!normalizedPhone) {
+          setError("Invalid phone number format. Please enter with country code (e.g., +919876543210).");
+          setPhoneLoading(false);
+          return;
+        }
         const existingCustomer = Array.isArray(customers)
-          ? customers.find(c => c.phone === fullPhone)
+          ? customers.find(c => c.phone === normalizedPhone)
           : null;
         if (existingCustomer) {
           setForm((f) => ({
@@ -227,7 +241,9 @@ const TattooConsentFormPage = () => {
 
   useEffect(() => {
     if (step === 1) {
-      if (form.phone && form.phone.length === 10) setError(null);
+      // Support both old 10-digit format and new international format
+      const isValid = /^\d{10}$/.test(form.phone) || validateInternationalPhone(normalizePhoneNumber(form.phone) || form.phone);
+      if (form.phone && isValid) setError(null);
     } else if (step === 2) {
       if (form.name && form.dob) {
         setError(null);
@@ -292,18 +308,17 @@ const TattooConsentFormPage = () => {
               handlePhoneSubmit(e);
             }} className="flex flex-col gap-8 w-full items-center">
               <div className="w-full flex flex-col items-center gap-6">
-                <div className="flex items-center w-full max-w-[400px] bg-white rounded-lg border border-black overflow-hidden">
-                  <span className="px-4 py-3 bg-gray-100 text-gray-700 font-semibold text-lg select-none">+91</span>
-                  <input
-                    type="tel"
+                <div className="w-full max-w-[400px]">
+                  <FormField
+                    label=""
                     name="phone"
+                    type="phone"
                     value={form.phone}
                     onChange={handlePhoneChange}
-                    maxLength={10}
-                    pattern="[0-9]{10}"
                     required
-                    placeholder="10-digit mobile number"
-                    className="flex-1 px-4 py-3 bg-white text-lg outline-none border-0"
+                    placeholder="Phone number"
+                    inputClassName="w-full"
+                    containerClassName="w-full"
                   />
                 </div>
                 {error && <div className="text-red-600 text-center w-full text-sm">{error}</div>}

@@ -1,14 +1,6 @@
 import { TATTOO_CONSENT_FORM_API_URL, UPLOAD_IMAGE_API_URL, CUSTOMER_API_URL, PIERCING_CONSENT_FORM_API_URL, GENERATE_CONSENT_PDF_URL } from "./apiUrls";
 import { fetchApi } from "./Fetch";
-
-/**
- * Helper function to format phone number with +91 prefix
- * @param {string} phone - Phone number to format
- * @returns {string} - Formatted phone number
- */
-const formatPhoneNumber = (phone) => {
-  return phone.startsWith("+91") ? phone : `+91${phone}`;
-};
+import { normalizePhoneNumber } from "./phoneUtils";
 
 /**
  * Helper function to handle customer lookup and creation/update
@@ -18,7 +10,10 @@ const formatPhoneNumber = (phone) => {
  */
 const handleCustomerLookup = async (customerData, setError) => {
   try {
-    const formattedPhone = formatPhoneNumber(customerData.phone);
+    const formattedPhone = normalizePhoneNumber(customerData.phone);
+    if (!formattedPhone) {
+      throw new Error('Invalid phone number format. Please enter with country code (e.g., +91xxxxxxxxxx)');
+    }
     
     // Query all customers
     const customers = await fetchApi(CUSTOMER_API_URL, { method: "GET" });
@@ -128,7 +123,10 @@ const createHealthInfo = (form) => ({
 const handleReferralTracking = async (currentCustomerId, form, setError) => {
   if (form.heardAboutUs === "friend-recommendation" && form.referralPhone) {
     try {
-      const formattedReferralPhone = formatPhoneNumber(form.referralPhone);
+      const formattedReferralPhone = normalizePhoneNumber(form.referralPhone);
+      if (!formattedReferralPhone) {
+        return; // Skip referral tracking if phone is invalid
+      }
       
       // Find the referring customer
       const customers = await fetchApi(CUSTOMER_API_URL, { method: "GET" });

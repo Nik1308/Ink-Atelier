@@ -100,13 +100,37 @@ export const piercingSubtypes = {
   ]
 };
 
+// Aftercare PDF URLs (public URLs)
+export const TATTOO_AFTERCARE_PDF_URL = '/aftercare/tattoo-aftercare.pdf';
+export const PIERCING_AFTERCARE_PDF_URL = '/aftercare/piercing-aftercare.pdf';
+
+// Get the full public URL for aftercare PDFs
+export function getAftercarePdfUrl(serviceType) {
+  // Get the current origin and ensure we use http:// for localhost
+  let baseUrl = window.location.origin;
+  
+  // Force http:// for localhost to avoid https:// issues in development
+  if (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) {
+    baseUrl = baseUrl.replace(/^https?:/, 'http:');
+  }
+  
+  if (serviceType === 'tattoo') {
+    return `${baseUrl}${TATTOO_AFTERCARE_PDF_URL}`;
+  } else if (serviceType === 'piercing') {
+    return `${baseUrl}${PIERCING_AFTERCARE_PDF_URL}`;
+  }
+  return null;
+}
+
 // WhatsApp Aftercare and Review Message Templates (personalized)
 export function getTattooAftercareMessage(clientName) {
-  return `Hi ${clientName},\n\nThank you for choosing INK ATELIER for your tattoo! To ensure your new tattoo heals beautifully and lasts a lifetime, please follow these aftercare guidelines carefully:\n\n• Keep the tattooed area clean and dry for the first 7 days.\n• Always wash your hands thoroughly before touching your tattoo.\n• Clean the tattoo using dry tissue only. Avoid cotton, wet tissues, towels, or cloths, as they may irritate the area or introduce bacteria.\n\n• Apply a thin layer of a fragrance-free, alcohol-free moisturizer or tattoo-specific aftercare cream only before bathing. Keep the area dry throughout the day.\n\n• After 7 days, moisturize the tattooed area twice daily using the recommended gel or ointment.\n\n• Avoid wearing tight or abrasive clothing that may rub against the tattoo.\n• Do not soak the tattoo in water — avoid baths, hot tubs, pools, and prolonged swimming sessions.\n• Refrain from strenuous activities or workouts that may cause excessive sweating or friction in the tattooed area.\n\n• Protect the tattoo from exposure to harsh chemicals such as chlorine, bleach, or cleaning agents.\n\n• Do not pick, scratch, or peel any scabs or flaking skin that may appear during the healing process.\n\n• Follow any personalized aftercare advice provided by your tattoo artist for best results.\n\n• If you observe any signs of infection — such as persistent redness, swelling, warmth, or discharge — contact your tattoo artist or a healthcare professional immediately.\n\n—\n\nINK ATELIER\nYour skin is our canvas. Treat it with care for lasting art.✨`;
+  const pdfUrl = getAftercarePdfUrl('tattoo');
+  return `Hi ${clientName},\n\nThank you for choosing INK ATELIER for your tattoo! 🎨\n\nTo ensure your new tattoo heals beautifully and lasts a lifetime, please follow the aftercare guidelines in this PDF:\n\n${pdfUrl}\n\nIf you have any questions or concerns, feel free to reach out to us.\n\n—\n\nINK ATELIER\nYour skin is our canvas. Treat it with care for lasting art. ✨`;
 }
 
 export function getPiercingAftercareMessage(clientName) {
-  return `Hi ${clientName},\n\nThank you for trusting INK ATELIER with your new piercing! Please follow these professional aftercare instructions to ensure a safe and smooth healing process:\n\n1. Cleanliness:\n• Always wash your hands thoroughly before touching your piercing.\n• Clean the area gently with a saline solution or a piercing aftercare spray (such as surgical spirit) recommended by your piercer.\n\n2. Avoid Irritants:\n• Do not use alcohol, hydrogen peroxide, or ointments, as they can delay healing and cause irritation.\n• Keep the area free from lotions, makeup, and other chemical-based products.\n\n3. Handling:\n• Avoid touching or twisting the jewelry unnecessarily.\n• Do not sleep on the piercing to prevent pressure and irritation.\n\n4. Healing Time:\n• Follow the healing timeline advised by your piercer, as it may vary based on the piercing location.\n• Be patient and avoid changing the jewelry for at least 2 months.\n\n5. Clothing and Activities:\n• Opt for loose-fitting clothing to avoid friction around the pierced area.\n• Refrain from swimming in pools, hot tubs, lakes, or oceans during the initial healing phase.\n• Avoid gym workouts or activities that cause excessive sweating around the pierced area.\n\n6. Monitor for Infection:\n• Watch for signs of infection such as excessive redness, swelling, pain, or unusual discharge.\n• If you suspect an infection, contact your piercer immediately.\n\n7. Maintain Hygiene:\n• Continue cleaning the area as advised until it is fully healed.\n• Avoid over-cleaning, as it may irritate the piercing.\n\n—\n\nINK ATELIER\nYour safety and style are our priority.\nStay clean. Heal well. Shine bright! ✨`;
+  const pdfUrl = getAftercarePdfUrl('piercing');
+  return `Hi ${clientName},\n\nThank you for trusting INK ATELIER with your new piercing! 💎\n\nTo ensure a safe and smooth healing process, please follow the aftercare guidelines in this PDF:\n\n${pdfUrl}\n\nIf you have any questions or concerns, feel free to reach out to us.\n\n—\n\nINK ATELIER\nYour safety and style are our priority.\nStay clean. Heal well. Shine bright! ✨`;
 }
 
 export function getReviewWhatsappMessage(clientName) {

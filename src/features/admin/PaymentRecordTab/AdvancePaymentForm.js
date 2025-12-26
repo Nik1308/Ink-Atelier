@@ -34,7 +34,7 @@ const AdvancePaymentForm = () => {
 
   const validateAdvance = () => {
     if (!validateRequired(advanceForm.name)) return 'Customer name is required.';
-    if (!validatePhone(advanceForm.phone)) return 'Enter a valid 10-digit phone number.';
+    if (!validatePhone(advanceForm.phone)) return 'Enter a valid phone number with country code (e.g., +919876543210).';
     if (!validateRequired(advanceForm.appointmentDate)) return 'Appointment date is required.';
     if (!validateNumber(advanceForm.advanceAmount)) return 'Enter a valid advance amount.';
     if (!validateNumber(advanceForm.totalQuotePrice)) return 'Enter a valid total quote price.';
@@ -109,7 +109,7 @@ const AdvancePaymentForm = () => {
         value={advanceForm.phone}
         onChange={handleAdvanceChange}
         required
-        placeholder="10-digit mobile number"
+        placeholder="Country code and number (e.g., 919876543210)"
         inputClassName="w-full max-w-[400px]"
         labelClassName="text-white font-semibold"
       />

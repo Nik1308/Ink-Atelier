@@ -224,7 +224,7 @@ const ConsentFormsTab = () => {
                     )}
                   </td>
                   <td className="px-2 py-3 font-semibold text-white text-base whitespace-nowrap">{customer.name || 'Unknown'}</td>
-                  <td className="px-2 py-3 font-mono text-sky-200 text-base whitespace-nowrap">{(customer.phone || '').replace(/^\+91/, '')}</td>
+                  <td className="px-2 py-3 font-mono text-sky-200 text-base whitespace-nowrap">{customer.phone || ''}</td>
                   <td className="px-2 py-3 whitespace-nowrap text-base text-white/80">{isTattoo ? (form.tattooDate ? formatDate(form.tattooDate) : form.createdAt ? formatDate(form.createdAt) : '—') : (form.piercingDate ? formatDate(form.piercingDate) : form.createdAt ? formatDate(form.createdAt) : '—')}</td>
                   <td className="px-2 py-3 whitespace-nowrap text-sm text-white/90">{isTattoo ? (form.tattooLocation || '-') : (form.piercingType || '-')}</td>
                   <td className="px-2 text-center">
