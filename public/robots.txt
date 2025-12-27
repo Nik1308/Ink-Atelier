@@ -1,17 +1,17 @@
-# https://www.robotstxt.org/robotstxt.html
+# robots.txt for Ink Atelier
 User-agent: *
 Allow: /
 
-# Sitemap
+# Sitemap location
 Sitemap: https://inkatelier.in/sitemap.xml
 
 # Disallow admin and login pages from search engines
 Disallow: /admin
 Disallow: /login
+Disallow: /csv-upload
 
-# Allow all other pages
+# Allow all public pages
+Allow: /
 Allow: /forms
 Allow: /tattoo-consent
 Allow: /piercing-consent
-Allow: /payment-record
-Allow: /category/

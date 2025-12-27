@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Drawer from '../../common/ui/Drawer';
+import { Drawer } from '../../../shared';
 import { FiHome, FiUsers, FiFileText, FiCreditCard, FiBarChart2, FiMessageCircle, FiLogOut, FiMenu, FiUserPlus } from 'react-icons/fi';
 
 const NAV_LINKS = [

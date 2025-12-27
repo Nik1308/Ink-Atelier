@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchApi } from '../../../utils/Fetch';
-import { PAYMENT_API_URL, ADVANCE_PAYMENT_API_URL, CUSTOMER_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL, EXPENSE_API_URL, LEADS_API_URL } from '../../../utils/apiUrls';
+import { fetchApi } from '../../../shared/utils/fetch';
+import { PAYMENT_API_URL, ADVANCE_PAYMENT_API_URL, CUSTOMER_API_URL, TATTOO_CONSENT_FORM_API_URL, PIERCING_CONSENT_FORM_API_URL, EXPENSE_API_URL, LEADS_API_URL } from '../../../shared/api';
 
 function mergeConsentForms(tattooForms, piercingForms) {
   const allForms = [
