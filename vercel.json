@@ -1,6 +1,6 @@
 {
   "buildCommand": "git lfs pull && npm run build",
-  "installCommand": "git lfs install && npm install",
+  "installCommand": "git lfs install && git config lfs.url https://github.com/Nik1308/Ink-Atelier.git/info/lfs && npm install",
   "rewrites": [
     {
       "source": "/(.*)",

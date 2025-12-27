@@ -19,8 +19,8 @@
     "workbox-core": "^7.3.0"
   },
   "scripts": {
-    "prebuild": "git lfs pull || echo 'Git LFS not available, continuing...'",
-    "postinstall": "git lfs pull || echo 'Git LFS not available, continuing...'",
+    "prebuild": "git config lfs.url https://github.com/Nik1308/Ink-Atelier.git/info/lfs && git lfs pull || echo 'Git LFS not available, continuing...'",
+    "postinstall": "git config lfs.url https://github.com/Nik1308/Ink-Atelier.git/info/lfs && git lfs pull || echo 'Git LFS not available, continuing...'",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
