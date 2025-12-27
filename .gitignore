@@ -22,12 +22,6 @@
 # Secrets file (contains sensitive credentials)
 src/utils/secrets.js
 
-# Large video files (too large for GitHub)
-public/assets/videos/*.mov
-public/assets/videos/*.MOV
-public/assets/videos/*.mp4
-public/assets/videos/*.MP4
-
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
