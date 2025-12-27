@@ -122,20 +122,6 @@ export function getAftercarePdfUrl(serviceType) {
   return null;
 }
 
-// WhatsApp Aftercare and Review Message Templates (personalized)
-export function getTattooAftercareMessage(clientName) {
-  const pdfUrl = getAftercarePdfUrl('tattoo');
-  return `Hi ${clientName},\n\nThank you for choosing INK ATELIER for your tattoo! 🎨\n\nTo ensure your new tattoo heals beautifully and lasts a lifetime, please follow the aftercare guidelines in this PDF:\n\n${pdfUrl}\n\nIf you have any questions or concerns, feel free to reach out to us.\n\n—\n\nINK ATELIER\nYour skin is our canvas. Treat it with care for lasting art. ✨`;
-}
-
-export function getPiercingAftercareMessage(clientName) {
-  const pdfUrl = getAftercarePdfUrl('piercing');
-  return `Hi ${clientName},\n\nThank you for trusting INK ATELIER with your new piercing! 💎\n\nTo ensure a safe and smooth healing process, please follow the aftercare guidelines in this PDF:\n\n${pdfUrl}\n\nIf you have any questions or concerns, feel free to reach out to us.\n\n—\n\nINK ATELIER\nYour safety and style are our priority.\nStay clean. Heal well. Shine bright! ✨`;
-}
-
-export function getReviewWhatsappMessage(clientName) {
-  return `Thank you for visiting INK ATELIER! We hope you had a wonderful experience. If you enjoyed your time with us, we would truly appreciate your feedback in a review. Your words help us maintain high standards and inspire new clients to trust our work. 😊\n\nPlease take a moment to share your thoughts:\nINK ATELIER (Tattoo Studio)\nhttps://g.page/r/CVWso4E-rCEsEBI/review\n\nAnd don't forget to follow us on Instagram for updates and inspiration:\nhttps://www.instagram.com/_ink_atelier_/profilecard/?igsh=MWt2dzA2ejQyczJqdQ==\n\nThank you again for choosing us!`;
-}
 
 export function getAdvancePaymentConfirmationMessage({ clientName = '', appointmentDate = '', advanceAmount = '', dueAmount = '' }) {
   // Format date and day
