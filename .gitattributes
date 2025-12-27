@@ -1,3 +1,7 @@
+public/assets/videos/*.mov filter=lfs diff=lfs merge=lfs -text
+public/assets/videos/*.MOV filter=lfs diff=lfs merge=lfs -text
+public/assets/videos/*.mp4 filter=lfs diff=lfs merge=lfs -text
+public/assets/videos/*.MP4 filter=lfs diff=lfs merge=lfs -text
 *.mov filter=lfs diff=lfs merge=lfs -text
 *.MOV filter=lfs diff=lfs merge=lfs -text
 *.mp4 filter=lfs diff=lfs merge=lfs -text
