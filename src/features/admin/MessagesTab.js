@@ -4,41 +4,12 @@ import { getCustomerName, getCustomerPhone, getCustomerById } from '../../utils/
 import { startOfDay, endOfDay, isWithinInterval, isSameDay } from 'date-fns';
 import usePagination from '../common/hooks/usePagination';
 import {
-  getTattooAftercareMessage,
-  getPiercingAftercareMessage,
-  getReviewWhatsappMessage,
   getAdvancePaymentConfirmationMessage,
   getAftercarePdfUrl
 } from '../../utils/constants';
-import GlassCard from './components/GlassCard';
 import { useLazyAdminResources } from './hooks/useLazyAdminResources';
 import { API_BASE_URL } from '../../utils/apiUrls';
 import { fetchApi } from '../../utils/Fetch';
-import { getAuthToken, clearAuthData } from '../../utils/authUtils';
-
-function ButtonWhatsApp({ phone, message, label }) {
-  const [loading, setLoading] = React.useState(false);
-  const formattedPhone = phone.replace(/[^0-9]/g, '');
-  // Only opens WhatsApp, no PATCH or sent/sentLabel logic
-  const handleClick = async () => {
-    setLoading(true);
-    try {
-      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
-    } finally {
-      setLoading(false);
-    }
-  };
-  return (
-    <button
-      className="px-4 py-1.5 rounded-xl bg-white text-black text-xs font-bold shadow hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-      onClick={handleClick}
-      disabled={loading}
-      style={{ minWidth: 140 }}
-    >
-      {loading ? 'Opening...' : label}
-    </button>
-  );
-}
 
 function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName }) {
   const [loading, setLoading] = React.useState(false);
@@ -155,9 +126,6 @@ const MessagesTab = () => {
     currentPage,
     setCurrentPage,
     totalPages,
-    totalItems,
-    startIndex,
-    endIndex,
   } = usePagination(filteredMessages, ITEMS_PER_PAGE);
 
   return (

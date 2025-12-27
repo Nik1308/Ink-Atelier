@@ -9,7 +9,6 @@ import { TattooConsentFormPage, PiercingConsentFormPage } from './features/forms
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
 import CsvUploadPage from "./pages/CsvUploadPage";
-// import PaymentRecordFormPage from "./pages/forms/PaymentRecordFormPage";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
@@ -32,7 +31,6 @@ function AppContent() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/csv-upload" element={<CsvUploadPage />} />
-        {/* <Route path="/payment-record" element={<PaymentRecordFormPage />} /> */}
       </Routes>
       {!hideFooter && <Footer />}
     </div>
