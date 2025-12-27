@@ -253,18 +253,31 @@ const HomePage = () => {
                     {hero.media && hero.media[0] ? (
                       hero.media[0].type === 'video' ? (
                         <video
-                          src={hero.media[0].url}
-                          poster={hero.media[0].poster}
                           className="w-full h-full object-cover"
                           autoPlay
                           loop
                           muted
                           playsInline
-                          loading="lazy"
+                          preload="metadata"
                           onError={(e) => {
                             console.error('Video failed to load:', hero.media[0].url);
+                            // Fallback to poster image if video fails
+                            if (hero.media[0].poster) {
+                              e.target.style.display = 'none';
+                              const img = document.createElement('img');
+                              img.src = hero.media[0].poster;
+                              img.className = 'w-full h-full object-cover';
+                              img.alt = hero.media[0].alt || 'Video thumbnail';
+                              e.target.parentNode.appendChild(img);
+                            }
                           }}
                         >
+                          <source src={hero.media[0].url} type="video/mp4" />
+                          <source src={hero.media[0].url} type="video/quicktime" />
+                          <source src={hero.media[0].url} />
+                          {hero.media[0].poster && (
+                            <img src={hero.media[0].poster} alt={hero.media[0].alt || 'Video thumbnail'} className="w-full h-full object-cover" />
+                          )}
                           Your browser does not support the video tag.
                         </video>
                       ) : (
@@ -292,18 +305,30 @@ const HomePage = () => {
                     {hero.media && hero.media[1] ? (
                       hero.media[1].type === 'video' ? (
                         <video
-                          src={hero.media[1].url}
-                          poster={hero.media[1].poster}
                           className="w-full h-full object-cover"
                           autoPlay
                           loop
                           muted
                           playsInline
-                          loading="lazy"
+                          preload="metadata"
                           onError={(e) => {
                             console.error('Video failed to load:', hero.media[1].url);
+                            if (hero.media[1].poster) {
+                              e.target.style.display = 'none';
+                              const img = document.createElement('img');
+                              img.src = hero.media[1].poster;
+                              img.className = 'w-full h-full object-cover';
+                              img.alt = hero.media[1].alt || 'Video thumbnail';
+                              e.target.parentNode.appendChild(img);
+                            }
                           }}
                         >
+                          <source src={hero.media[1].url} type="video/mp4" />
+                          <source src={hero.media[1].url} type="video/quicktime" />
+                          <source src={hero.media[1].url} />
+                          {hero.media[1].poster && (
+                            <img src={hero.media[1].poster} alt={hero.media[1].alt || 'Video thumbnail'} className="w-full h-full object-cover" />
+                          )}
                           Your browser does not support the video tag.
                         </video>
                       ) : (
@@ -331,18 +356,30 @@ const HomePage = () => {
                     {hero.media && hero.media[2] ? (
                       hero.media[2].type === 'video' ? (
                         <video
-                          src={hero.media[2].url}
-                          poster={hero.media[2].poster}
                           className="w-full h-full object-cover"
                           autoPlay
                           loop
                           muted
                           playsInline
-                          loading="lazy"
+                          preload="metadata"
                           onError={(e) => {
                             console.error('Video failed to load:', hero.media[2].url);
+                            if (hero.media[2].poster) {
+                              e.target.style.display = 'none';
+                              const img = document.createElement('img');
+                              img.src = hero.media[2].poster;
+                              img.className = 'w-full h-full object-cover';
+                              img.alt = hero.media[2].alt || 'Video thumbnail';
+                              e.target.parentNode.appendChild(img);
+                            }
                           }}
                         >
+                          <source src={hero.media[2].url} type="video/mp4" />
+                          <source src={hero.media[2].url} type="video/quicktime" />
+                          <source src={hero.media[2].url} />
+                          {hero.media[2].poster && (
+                            <img src={hero.media[2].poster} alt={hero.media[2].alt || 'Video thumbnail'} className="w-full h-full object-cover" />
+                          )}
                           Your browser does not support the video tag.
                         </video>
                       ) : (
@@ -541,18 +578,30 @@ const HomePage = () => {
                       {service.media ? (
                         service.media.type === 'video' ? (
                           <video
-                            src={service.media.url}
-                            poster={service.media.poster}
                             className="w-full h-full object-cover"
                             autoPlay
                             loop
                             muted
                             playsInline
-                            loading="lazy"
+                            preload="metadata"
                             onError={(e) => {
                               console.error('Video failed to load:', service.media.url);
+                              if (service.media.poster) {
+                                e.target.style.display = 'none';
+                                const img = document.createElement('img');
+                                img.src = service.media.poster;
+                                img.className = 'w-full h-full object-cover';
+                                img.alt = service.media.alt || service.title;
+                                e.target.parentNode.appendChild(img);
+                              }
                             }}
                           >
+                            <source src={service.media.url} type="video/mp4" />
+                            <source src={service.media.url} type="video/quicktime" />
+                            <source src={service.media.url} />
+                            {service.media.poster && (
+                              <img src={service.media.poster} alt={service.media.alt || service.title} className="w-full h-full object-cover" />
+                            )}
                             Your browser does not support the video tag.
                           </video>
                         ) : (
@@ -664,18 +713,30 @@ const HomePage = () => {
                 {about.media ? (
                   about.media.type === 'video' ? (
                     <video
-                      src={about.media.url}
-                      poster={about.media.poster}
                       className="w-full h-full object-cover"
                       autoPlay
                       loop
                       muted
                       playsInline
-                      loading="lazy"
+                      preload="metadata"
                       onError={(e) => {
                         console.error('Video failed to load:', about.media.url);
+                        if (about.media.poster) {
+                          e.target.style.display = 'none';
+                          const img = document.createElement('img');
+                          img.src = about.media.poster;
+                          img.className = 'w-full h-full object-cover';
+                          img.alt = about.media.alt || 'About Ink Atelier';
+                          e.target.parentNode.appendChild(img);
+                        }
                       }}
                     >
+                      <source src={about.media.url} type="video/mp4" />
+                      <source src={about.media.url} type="video/quicktime" />
+                      <source src={about.media.url} />
+                      {about.media.poster && (
+                        <img src={about.media.poster} alt={about.media.alt || 'About Ink Atelier'} className="w-full h-full object-cover" />
+                      )}
                       Your browser does not support the video tag.
                     </video>
                   ) : (
