@@ -22,6 +22,17 @@ function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName
     // Format phone number for WhatsApp
     const formattedPhone = phone.replace(/[^0-9]/g, '');
     
+    // CRITICAL: Open WhatsApp window IMMEDIATELY (synchronously) to avoid popup blocking
+    // We'll update the URL after async operations complete
+    const whatsappWindow = window.open(`https://wa.me/${formattedPhone}`, '_blank');
+    
+    // If window.open was blocked, show error and return
+    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
+      setError('Popup blocked. Please allow popups for this site.');
+      setLoading(false);
+      return;
+    }
+    
     try {
       // Get aftercare PDF URL (synchronous)
       const aftercareUrl = getAftercarePdfUrl(service);
@@ -43,16 +54,16 @@ function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName
 
       let baseMessage = `Hi ${clientName},\n\n${thankYouMessage}.\n\nPlease follow the aftercare instructions here for smooth healing:\n\n${serviceLabel}\n${aftercareUrl || 'Aftercare PDF'}`;
 
-      // Get invoice URL if invoice exists (async)
+      // Get invoice URL if invoice exists (async) - but don't wait too long
       let invoiceUrl = null;
       if (invoiceId) {
         try {
-          // Use Promise.race to timeout after 2 seconds to avoid blocking on slow networks
+          // Use Promise.race to timeout after 1.5 seconds to avoid blocking
           const invoicePromise = fetchApi(getInvoiceDownloadUrl(invoiceId), {
             method: 'GET',
           });
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout')), 2000)
+            setTimeout(() => reject(new Error('Timeout')), 1500)
           );
           
           const response = await Promise.race([invoicePromise, timeoutPromise]);
@@ -77,13 +88,32 @@ function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName
       // Add closing message
       message += `\n\nIf you need anything during healing, feel free to reach out anytime.\n\nWarm regards,\nINK ATELIER`;
 
-      // Open WhatsApp with the complete message
-      // On iPad/mobile, this must be called synchronously in response to user action
-      // By building the message first and fetching invoice with timeout, we minimize delay
-      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+      // Update the WhatsApp window with the complete message
+      // Since the window is already open, we can update it without popup blocking
+      try {
+        whatsappWindow.location.href = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+      } catch (e) {
+        // If we can't update (cross-origin restriction), try opening a new one
+        // This should work since we're updating very quickly after user action
+        window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+        // Close the empty window if possible
+        try {
+          whatsappWindow.close();
+        } catch (closeErr) {
+          // Ignore close errors
+        }
+      }
     } catch (err) {
       setError('Failed to send');
       console.error('Aftercare, invoice and review send error:', err);
+      // Close the window if there was an error
+      try {
+        if (whatsappWindow && !whatsappWindow.closed) {
+          whatsappWindow.close();
+        }
+      } catch (closeErr) {
+        // Ignore close errors
+      }
     } finally {
       setLoading(false);
     }
