@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DateRangeSelector } from '../../../shared';
 import { usePagination } from '../../../shared/hooks';
 import { getCustomerName, getCustomerPhone, getCustomerById } from '../../../shared/utils/customer';
@@ -46,25 +46,117 @@ function getAftercareMessage({ clientName, service, invoiceUrl }) {
   return message;
 }
 
-function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName, invoiceUrl }) {
+function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName, invoiceUrl: cachedInvoiceUrl, onInvoiceFetched }) {
+  const [loading, setLoading] = React.useState(false);
+  const [showPopup, setShowPopup] = React.useState(false);
+  const [currentInvoiceUrl, setCurrentInvoiceUrl] = React.useState(cachedInvoiceUrl);
+  const [message, setMessage] = React.useState(null);
+  const [error, setError] = React.useState(null);
+  
   // Format phone number for WhatsApp
   const formattedPhone = phone.replace(/[^0-9]/g, '');
   
-  // Get the message
-  const message = getAftercareMessage({ clientName, service, invoiceUrl });
-  
-  // Create WhatsApp URL
-  const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+  const handleFirstClick = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    let invoiceUrl = currentInvoiceUrl;
+    
+    // If we don't have invoice URL and invoiceId exists, fetch it
+    if (!invoiceUrl && invoiceId) {
+      try {
+        // Fetch invoice URL
+        const response = await fetchApi(getInvoiceDownloadUrl(invoiceId), {
+          method: 'GET',
+        });
+        invoiceUrl = response?.downloadUrl || null;
+        
+        // Update state and notify parent
+        if (invoiceUrl) {
+          setCurrentInvoiceUrl(invoiceUrl);
+          if (onInvoiceFetched) {
+            onInvoiceFetched(invoiceUrl);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch invoice URL:', err);
+        setError('Failed to fetch invoice. Continue without invoice?');
+        // Continue without invoice URL
+      }
+    }
+    
+    // Build complete message
+    const completeMessage = getAftercareMessage({ clientName, service, invoiceUrl });
+    setMessage(completeMessage);
+    
+    setLoading(false);
+    setShowPopup(true);
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!message) return;
+    
+    // Open WhatsApp with complete message (this is a direct user action, so no popup blocking)
+    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    setShowPopup(false);
+  };
+
+  const handleCancel = () => {
+    setShowPopup(false);
+    setMessage(null);
+    setError(null);
+  };
 
   return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="px-4 py-1.5 rounded-xl bg-white text-black text-xs font-bold shadow hover:bg-gray-100 transition inline-block text-center"
-    >
-      Send Message
-    </a>
+    <>
+      <button
+        onClick={handleFirstClick}
+        disabled={loading}
+        className="px-4 py-1.5 rounded-xl bg-white text-black text-xs font-bold shadow hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? 'Loading...' : 'Send Message'}
+      </button>
+      
+      {showPopup && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center" style={{ backdropFilter: 'blur(5px)' }}>
+          <div
+            className="absolute inset-0 bg-black/40 cursor-pointer"
+            onClick={handleCancel}
+            aria-label="Close modal overlay"
+          />
+          <div className="relative bg-gradient-to-br from-slate-900/90 to-black/90 border border-white/10 rounded-2xl shadow-2xl p-6 w-full max-w-md backdrop-blur-xl"
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-white mb-4">Ready to Send</h3>
+            <p className="text-gray-300 mb-2">
+              Message prepared for <strong className="text-white">{clientName}</strong>
+            </p>
+            {error && (
+              <p className="text-yellow-400 text-sm mb-4">{error}</p>
+            )}
+            {currentInvoiceUrl ? (
+              <p className="text-green-400 text-sm mb-4">✓ Invoice included</p>
+            ) : (
+              <p className="text-gray-400 text-sm mb-4">ℹ No invoice available</p>
+            )}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleCancel}
+                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendWhatsApp}
+                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
+              >
+                Open WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -99,54 +191,13 @@ const MessagesTab = () => {
       .sort((a, b) => new Date(b.paymentDate || b.createdAt) - new Date(a.paymentDate || a.createdAt));
   }, [payments?.data, dateRange, customers?.data]);
 
-  // Fetch invoice URLs only for filtered messages (selected date range, max 3 days)
-  useEffect(() => {
-    const fetchInvoiceUrls = async () => {
-      if (!filteredMessages || filteredMessages.length === 0) {
-        setInvoiceUrls({});
-        return;
-      }
-
-      // Check if date range is within 3 days
-      const { startDate, endDate } = dateRange[0];
-      const daysDiff = differenceInDays(endDate, startDate);
-      
-      if (daysDiff > 3) {
-        // If more than 3 days, don't fetch invoices
-        setInvoiceUrls({});
-        return;
-      }
-
-      const urls = {};
-      
-      // Only fetch invoices for payments in the filtered date range
-      const fetchPromises = filteredMessages
-        .filter(p => 
-          p.invoice?.zohoInvoiceId && 
-          p.invoice?.id && 
-          p.paymentType !== 'Advance'
-        )
-        .map(async (payment) => {
-          try {
-            // Use payment.invoice.id to ensure correct matching
-            const response = await fetchApi(getInvoiceDownloadUrl(payment.invoice.id), {
-              method: 'GET',
-            });
-            if (response?.downloadUrl) {
-              // Use payment.id as key to match with the payment in the table
-              urls[payment.id] = response.downloadUrl;
-            }
-          } catch (err) {
-            console.warn(`Failed to fetch invoice URL for payment ${payment.id}:`, err);
-          }
-        });
-      
-      await Promise.all(fetchPromises);
-      setInvoiceUrls(urls);
-    };
-
-    fetchInvoiceUrls();
-  }, [filteredMessages, dateRange]);
+  // Handle invoice URL fetched on-demand
+  const handleInvoiceFetched = (paymentId, invoiceUrl) => {
+    setInvoiceUrls(prev => ({
+      ...prev,
+      [paymentId]: invoiceUrl
+    }));
+  };
 
   // Pagination
   const ITEMS_PER_PAGE = 10;
@@ -209,6 +260,7 @@ const MessagesTab = () => {
                         service={msg.service}
                         clientName={getCustomerName(customers?.data || [], msg.customerId)}
                         invoiceUrl={invoiceUrls[msg.id] || null}
+                        onInvoiceFetched={(invoiceUrl) => handleInvoiceFetched(msg.id, invoiceUrl)}
                       />
                     )}
                   </td>
