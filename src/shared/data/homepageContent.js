@@ -327,7 +327,7 @@ export const homepageContent = {
     logo: "/assets/images/logo.jpg", // Logo image path
     location: "764/A, 22nd cross road, Parangipalya Main Rd, 2nd Sector, HSR Layout, Bangalore - 560102",
     timing: "Monday - Sunday: 12:00 PM - 9:00 PM",
-    instagramLink: "https://www.instagram.com/inkatelier/",
+    instagramLink: "https://www.instagram.com/_ink_atelier_/",
     copyright: "© 2025 Ink Atelier. All rights reserved.",
   },
 };

@@ -129,7 +129,7 @@ const HomePage = () => {
     openingHoursSpecification: [
       {
         '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         opens: '12:00',
         closes: '21:00'
       }
@@ -137,8 +137,8 @@ const HomePage = () => {
     servesCuisine: false,
     hasMap: 'https://inkatelier.in',
     sameAs: [
-      'https://www.instagram.com/inkatelier/',
-      'https://www.facebook.com/inkatelier/'
+      'https://www.instagram.com/_ink_atelier_/',
+      'https://www.facebook.com/100089553223174'
     ],
     aggregateRating: {
       '@type': 'AggregateRating',
@@ -166,8 +166,8 @@ const HomePage = () => {
       availableLanguage: ['English', 'Hindi', 'Kannada']
     },
     sameAs: [
-      'https://www.instagram.com/inkatelier/',
-      'https://www.facebook.com/inkatelier/'
+      'https://www.instagram.com/_ink_atelier_/',
+      'https://www.facebook.com/100089553223174'
     ]
   };
 

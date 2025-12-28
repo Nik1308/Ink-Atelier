@@ -8,8 +8,8 @@ const FormsPage = () => (
       title="Tattoo & Piercing Consent Forms - Ink Atelier | Book Your Appointment"
       description="Complete your tattoo consent form or piercing consent form online. Required forms for all body art procedures at Ink Atelier. Quick and easy digital consent forms for tattoo and piercing services."
       keywords="tattoo consent form, piercing consent form, body art consent, tattoo waiver, piercing waiver, ink atelier forms, tattoo booking, piercing booking, tattoo appointment, piercing appointment, online consent form, digital tattoo form, tattoo consultation form"
-      image="/assets/images/logo.jpg"
-      url="https://inkatelier.in/forms"
+              image="/assets/images/logo.jpg"
+              url="https://inkatelier.in/forms"
       type="website"
     />
     <section className="min-h-screen bg-white flex flex-col items-center justify-center py-16 px-2 relative">
