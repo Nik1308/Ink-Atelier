@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FormField, FormSection, RadioGroup, SEO } from '../../../shared';
+import { FormField, FormSection, RadioGroup, SEO, MedicalConditionModal } from '../../../shared';
 import { CUSTOMER_API_URL } from '../../../shared/api';
 import { fetchApi } from '../../../shared/utils/fetch';
 import { normalizePhoneNumber, validateInternationalPhone } from '../../../shared/utils/phone';
@@ -51,6 +51,8 @@ const PiercingConsentFormPage = () => {
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
+  const [showMedicalModal, setShowMedicalModal] = useState(false);
+  const [artistCodeVerified, setArtistCodeVerified] = useState(false);
   const navigate = useNavigate();
 
   // Allow international phone format (with + and country code)
@@ -149,12 +151,28 @@ const PiercingConsentFormPage = () => {
     }
   }, [step, form]);
 
+  // Check if any medical condition is selected
+  const hasMedicalCondition = () => {
+    return form.medications === "yes" ||
+           form.allergies === "yes" ||
+           form.medicalConditions === "yes" ||
+           form.alcoholDrugs === "yes" ||
+           form.pregnantNursing === "yes";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep5()) {
       setError("You must agree to the consent statement.");
       return;
     }
+
+    // Check for medical conditions
+    if (hasMedicalCondition() && !artistCodeVerified) {
+      setShowMedicalModal(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -162,6 +180,28 @@ const PiercingConsentFormPage = () => {
       await submitPiercingConsentForm(form, setLoading, setError);
       setSuccess("Consent submitted successfully!");
       setForm(initialForm);
+      setArtistCodeVerified(false);
+      setLoading(false);
+      setStep(6);
+      setTimeout(() => navigate("/forms"), 5000);
+    } catch (err) {
+      setLoading(false);
+    }
+  };
+
+  const handleCodeVerified = async () => {
+    setArtistCodeVerified(true);
+    setShowMedicalModal(false);
+    
+    // Submit the form after code verification
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await submitPiercingConsentForm(form, setLoading, setError);
+      setSuccess("Consent submitted successfully!");
+      setForm(initialForm);
+      setArtistCodeVerified(false);
       setLoading(false);
       setStep(6);
       setTimeout(() => navigate("/forms"), 5000);
@@ -251,6 +291,11 @@ const PiercingConsentFormPage = () => {
 
   return (
     <>
+      <MedicalConditionModal
+        open={showMedicalModal}
+        onClose={() => setShowMedicalModal(false)}
+        onCodeVerified={handleCodeVerified}
+      />
       <SEO 
         title="Piercing Consent Form - Ink Atelier | Online Body Piercing Waiver & Booking Form"
         description="Complete your piercing consent form online. Required legal document for all body piercing procedures at Ink Atelier. Safe and secure form submission. Book your piercing appointment with our professional piercing specialists."
@@ -362,7 +407,20 @@ const PiercingConsentFormPage = () => {
                     inputClassName="w-full max-w-[400px]"
                   />
                 )}
-                <FormField label="Piercing Artist" name="piercingArtist" type="text" value={form.piercingArtist} onChange={handleChange} required placeholder="Piercing Artist" inputClassName="w-full max-w-[400px]" />
+                <FormField 
+                  label="Piercing Artist" 
+                  name="piercingArtist" 
+                  type="select" 
+                  value={form.piercingArtist} 
+                  onChange={handleChange} 
+                  required 
+                  placeholder="Select artist"
+                  options={[
+                    { value: 'Soni Jain', label: 'Soni Jain' },
+                    { value: 'Ravi', label: 'Ravi' }
+                  ]}
+                  inputClassName="w-full max-w-[400px]" 
+                />
                 <FormField label="Date of Piercing" name="piercingDate" type="date" value={form.piercingDate} onChange={handleChange} required placeholder="Date of Piercing" inputClassName="w-full max-w-[400px]" />
               </FormSection>
               {error && <div className="text-red-600 mt-2 text-center w-full text-sm">{error}</div>}

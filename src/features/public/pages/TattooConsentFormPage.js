@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FormField, FormSection, RadioGroup, SEO } from '../../../shared';
+import { FormField, FormSection, RadioGroup, SEO, MedicalConditionModal } from '../../../shared';
 import { CUSTOMER_API_URL } from '../../../shared/api';
 import { fetchApi } from '../../../shared/utils/fetch';
 import { normalizePhoneNumber, validateInternationalPhone } from '../../../shared/utils/phone';
@@ -60,6 +60,8 @@ const TattooConsentFormPage = () => {
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
+  const [showMedicalModal, setShowMedicalModal] = useState(false);
+  const [artistCodeVerified, setArtistCodeVerified] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -258,12 +260,28 @@ const TattooConsentFormPage = () => {
     }
   }, [step, form]);
 
+  // Check if any medical condition is selected
+  const hasMedicalCondition = () => {
+    return form.medications === "yes" ||
+           form.allergies === "yes" ||
+           form.medicalConditions === "yes" ||
+           form.alcoholDrugs === "yes" ||
+           form.pregnantNursing === "yes";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep5()) {
       setError("You must agree to the consent statement.");
       return;
     }
+
+    // Check for medical conditions
+    if (hasMedicalCondition() && !artistCodeVerified) {
+      setShowMedicalModal(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -272,6 +290,32 @@ const TattooConsentFormPage = () => {
       setSuccess("Consent submitted successfully!");
       setForm(initialForm);
       setTattooDesignPreview(null);
+      setArtistCodeVerified(false);
+      setLoading(false);
+      if (tattooDesignInputRef.current) {
+        tattooDesignInputRef.current.value = "";
+      }
+      setStep(6);
+      setTimeout(() => navigate("/forms"), 5000);
+    } catch (err) {
+      setLoading(false);
+    }
+  };
+
+  const handleCodeVerified = async () => {
+    setArtistCodeVerified(true);
+    setShowMedicalModal(false);
+    
+    // Submit the form after code verification
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await submitTattooConsentForm(form, setLoading, setError);
+      setSuccess("Consent submitted successfully!");
+      setForm(initialForm);
+      setTattooDesignPreview(null);
+      setArtistCodeVerified(false);
       setLoading(false);
       if (tattooDesignInputRef.current) {
         tattooDesignInputRef.current.value = "";
@@ -285,6 +329,11 @@ const TattooConsentFormPage = () => {
 
   return (
     <>
+      <MedicalConditionModal
+        open={showMedicalModal}
+        onClose={() => setShowMedicalModal(false)}
+        onCodeVerified={handleCodeVerified}
+      />
       <SEO 
         title="Tattoo Consent Form - Ink Atelier | Online Tattoo Waiver & Booking Form"
         description="Complete your tattoo consent form online. Required legal document for all tattoo procedures at Ink Atelier. Safe and secure form submission. Book your tattoo appointment with our professional tattoo artists."

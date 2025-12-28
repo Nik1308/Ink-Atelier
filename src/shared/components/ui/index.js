@@ -10,3 +10,4 @@ export { default as Drawer } from './Drawer';
 export { default as OverlayPositioner } from './OverlayPositioner';
 export { default as SwiperCarousel } from './SwiperCarousel';
 export { default as GlassModal } from './GlassModal';
+export { default as MedicalConditionModal } from './MedicalConditionModal';

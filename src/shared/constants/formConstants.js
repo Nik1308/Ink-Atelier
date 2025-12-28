@@ -100,3 +100,7 @@ export const piercingSubtypes = {
   ]
 };
 
+// Artist code for overriding medical condition restrictions
+// This is a 6-digit code that artists can use to submit forms with medical conditions
+export const ARTIST_OVERRIDE_CODE = process.env.REACT_APP_ARTIST_OVERRIDE_CODE || '724072';
+
