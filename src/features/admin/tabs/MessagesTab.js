@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DateRangeSelector } from '../../../shared';
 import { usePagination } from '../../../shared/hooks';
 import { getCustomerName, getCustomerPhone, getCustomerById } from '../../../shared/utils/customer';
-import { startOfDay, endOfDay, isWithinInterval, isSameDay } from 'date-fns';
+import { startOfDay, endOfDay, isWithinInterval, isSameDay, differenceInDays } from 'date-fns';
 import {
   getAdvancePaymentConfirmationMessage,
   getAftercarePdfUrl
@@ -11,123 +11,60 @@ import { useLazyAdminResources } from '../hooks/useLazyAdminResources';
 import { getInvoiceDownloadUrl } from '../../../shared/api';
 import { fetchApi } from '../../../shared/utils/fetch';
 
-function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName }) {
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(null);
+function getAftercareMessage({ clientName, service, invoiceUrl }) {
+  // Get aftercare PDF URL
+  const aftercareUrl = getAftercarePdfUrl(service);
+  
+  // Build base message
+  let serviceLabel = '';
+  let thankYouMessage = '';
+  
+  if (service === 'tattoo') {
+    serviceLabel = 'Tattoo Aftercare Guide';
+    thankYouMessage = 'Thank you for choosing INK ATELIER for your tattoo — we truly appreciate your trust';
+  } else if (service === 'piercing') {
+    serviceLabel = 'Piercing Aftercare Guide';
+    thankYouMessage = 'Thank you for choosing INK ATELIER for your piercing — we truly appreciate your trust';
+  } else {
+    serviceLabel = 'Aftercare Guide';
+    thankYouMessage = 'Thank you for choosing INK ATELIER — we truly appreciate your trust';
+  }
 
-  const handleSend = async () => {
-    setLoading(true);
-    setError(null);
-    
-    // Format phone number for WhatsApp
-    const formattedPhone = phone.replace(/[^0-9]/g, '');
-    
-    // CRITICAL: Open WhatsApp window IMMEDIATELY (synchronously) to avoid popup blocking
-    // We'll update the URL after async operations complete
-    const whatsappWindow = window.open(`https://wa.me/${formattedPhone}`, '_blank');
-    
-    // If window.open was blocked, show error and return
-    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
-      setError('Popup blocked. Please allow popups for this site.');
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      // Get aftercare PDF URL (synchronous)
-      const aftercareUrl = getAftercarePdfUrl(service);
-      
-      // Build base message first (without invoice)
-      let serviceLabel = '';
-      let thankYouMessage = '';
-      
-      if (service === 'tattoo') {
-        serviceLabel = 'Tattoo Aftercare Guide';
-        thankYouMessage = 'Thank you for choosing INK ATELIER for your tattoo — we truly appreciate your trust';
-      } else if (service === 'piercing') {
-        serviceLabel = 'Piercing Aftercare Guide';
-        thankYouMessage = 'Thank you for choosing INK ATELIER for your piercing — we truly appreciate your trust';
-      } else {
-        serviceLabel = 'Aftercare Guide';
-        thankYouMessage = 'Thank you for choosing INK ATELIER — we truly appreciate your trust';
-      }
+  let message = `Hi ${clientName},\n\n${thankYouMessage}.\n\nPlease follow the aftercare instructions here for smooth healing:\n\n${serviceLabel}\n${aftercareUrl || 'Aftercare PDF'}`;
 
-      let baseMessage = `Hi ${clientName},\n\n${thankYouMessage}.\n\nPlease follow the aftercare instructions here for smooth healing:\n\n${serviceLabel}\n${aftercareUrl || 'Aftercare PDF'}`;
+  // Add invoice link if available
+  if (invoiceUrl) {
+    message += `\n\nYour invoice is available here:\n${invoiceUrl}`;
+  }
 
-      // Get invoice URL if invoice exists (async) - but don't wait too long
-      let invoiceUrl = null;
-      if (invoiceId) {
-        try {
-          // Use Promise.race to timeout after 1.5 seconds to avoid blocking
-          const invoicePromise = fetchApi(getInvoiceDownloadUrl(invoiceId), {
-            method: 'GET',
-          });
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout')), 1500)
-          );
-          
-          const response = await Promise.race([invoicePromise, timeoutPromise]);
-          invoiceUrl = response?.downloadUrl || null;
-        } catch (err) {
-          console.warn('Failed to fetch invoice URL:', err);
-          // Continue without invoice URL
-        }
-      }
+  // Add review section
+  message += `\n\nIf you had a great experience with us, we'd really appreciate a quick Google review — it truly helps our studio grow.\n\nhttps://g.page/r/CVWso4E-rCEsEBI/review`;
 
-      // Build complete message
-      let message = baseMessage;
+  // Add closing message
+  message += `\n\nIf you need anything during healing, feel free to reach out anytime.\n\nWarm regards,\nINK ATELIER`;
 
-      // Add invoice link if available
-      if (invoiceUrl) {
-        message += `\n\nYour invoice is available here:\n${invoiceUrl}`;
-      }
+  return message;
+}
 
-      // Add review section
-      message += `\n\nIf you had a great experience with us, we'd really appreciate a quick Google review — it truly helps our studio grow.\n\nhttps://g.page/r/CVWso4E-rCEsEBI/review`;
-
-      // Add closing message
-      message += `\n\nIf you need anything during healing, feel free to reach out anytime.\n\nWarm regards,\nINK ATELIER`;
-
-      // Update the WhatsApp window with the complete message
-      // Since the window is already open, we can update it without popup blocking
-      try {
-        whatsappWindow.location.href = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-      } catch (e) {
-        // If we can't update (cross-origin restriction), try opening a new one
-        // This should work since we're updating very quickly after user action
-        window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
-        // Close the empty window if possible
-        try {
-          whatsappWindow.close();
-        } catch (closeErr) {
-          // Ignore close errors
-        }
-      }
-    } catch (err) {
-      setError('Failed to send');
-      console.error('Aftercare, invoice and review send error:', err);
-      // Close the window if there was an error
-      try {
-        if (whatsappWindow && !whatsappWindow.closed) {
-          whatsappWindow.close();
-        }
-      } catch (closeErr) {
-        // Ignore close errors
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+function AftercareInvoiceAndReviewButton({ invoiceId, phone, service, clientName, invoiceUrl }) {
+  // Format phone number for WhatsApp
+  const formattedPhone = phone.replace(/[^0-9]/g, '');
+  
+  // Get the message
+  const message = getAftercareMessage({ clientName, service, invoiceUrl });
+  
+  // Create WhatsApp URL
+  const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
 
   return (
-    <button
-      className="px-4 py-1.5 rounded-xl bg-white text-black text-xs font-bold shadow hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-      onClick={handleSend}
-      disabled={loading}
-      title={error || 'Send Message'}
+    <a
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="px-4 py-1.5 rounded-xl bg-white text-black text-xs font-bold shadow hover:bg-gray-100 transition inline-block text-center"
     >
-      {loading ? 'Loading...' : error || 'Send Message'}
-    </button>
+      Send Message
+    </a>
   );
 }
 
@@ -140,6 +77,7 @@ const MessagesTab = () => {
   const [dateRange, setDateRange] = useState([
     { startDate: startOfDay(new Date()), endDate: endOfDay(new Date()), key: 'selection' }
   ]);
+  const [invoiceUrls, setInvoiceUrls] = useState({}); // Store invoice URLs by payment ID
 
   // Combine and filter payments by date
   const filteredMessages = useMemo(() => {
@@ -160,6 +98,55 @@ const MessagesTab = () => {
       })
       .sort((a, b) => new Date(b.paymentDate || b.createdAt) - new Date(a.paymentDate || a.createdAt));
   }, [payments?.data, dateRange, customers?.data]);
+
+  // Fetch invoice URLs only for filtered messages (selected date range, max 3 days)
+  useEffect(() => {
+    const fetchInvoiceUrls = async () => {
+      if (!filteredMessages || filteredMessages.length === 0) {
+        setInvoiceUrls({});
+        return;
+      }
+
+      // Check if date range is within 3 days
+      const { startDate, endDate } = dateRange[0];
+      const daysDiff = differenceInDays(endDate, startDate);
+      
+      if (daysDiff > 3) {
+        // If more than 3 days, don't fetch invoices
+        setInvoiceUrls({});
+        return;
+      }
+
+      const urls = {};
+      
+      // Only fetch invoices for payments in the filtered date range
+      const fetchPromises = filteredMessages
+        .filter(p => 
+          p.invoice?.zohoInvoiceId && 
+          p.invoice?.id && 
+          p.paymentType !== 'Advance'
+        )
+        .map(async (payment) => {
+          try {
+            // Use payment.invoice.id to ensure correct matching
+            const response = await fetchApi(getInvoiceDownloadUrl(payment.invoice.id), {
+              method: 'GET',
+            });
+            if (response?.downloadUrl) {
+              // Use payment.id as key to match with the payment in the table
+              urls[payment.id] = response.downloadUrl;
+            }
+          } catch (err) {
+            console.warn(`Failed to fetch invoice URL for payment ${payment.id}:`, err);
+          }
+        });
+      
+      await Promise.all(fetchPromises);
+      setInvoiceUrls(urls);
+    };
+
+    fetchInvoiceUrls();
+  }, [filteredMessages, dateRange]);
 
   // Pagination
   const ITEMS_PER_PAGE = 10;
@@ -221,6 +208,7 @@ const MessagesTab = () => {
                         phone={getCustomerPhone(customers?.data || [], msg.customerId)}
                         service={msg.service}
                         clientName={getCustomerName(customers?.data || [], msg.customerId)}
+                        invoiceUrl={invoiceUrls[msg.id] || null}
                       />
                     )}
                   </td>
