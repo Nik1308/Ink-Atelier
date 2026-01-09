@@ -12,7 +12,21 @@ const SEO = ({
   structuredData = null
 }) => {
   const location = useLocation();
-  const currentUrl = url || `https://inkatelier.in${location.pathname}`;
+  
+  // Normalize URL: remove trailing slash (except for root), ensure https, no www
+  const normalizeUrl = (urlString) => {
+    let normalized = urlString;
+    // Remove trailing slash except for root
+    if (normalized.endsWith('/') && normalized !== 'https://inkatelier.in/') {
+      normalized = normalized.slice(0, -1);
+    }
+    // Ensure it starts with https://inkatelier.in (not www)
+    normalized = normalized.replace(/^https?:\/\/(www\.)?inkatelier\.in/, 'https://inkatelier.in');
+    return normalized;
+  };
+  
+  const baseUrl = url || `https://inkatelier.in${location.pathname}`;
+  const currentUrl = normalizeUrl(baseUrl);
   const defaultImage = image || 'https://inkatelier.in/assets/images/logo.jpg';
 
   useEffect(() => {
@@ -86,14 +100,29 @@ const SEO = ({
       metaTag.content = tag.content;
     });
     
-    // Canonical URL
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.rel = 'canonical';
-      document.head.appendChild(canonical);
-    }
+    // Canonical URL - Remove all existing canonical tags first to avoid duplicates
+    const existingCanonicals = document.querySelectorAll('link[rel="canonical"]');
+    existingCanonicals.forEach(tag => tag.remove());
+    
+    // Create new canonical tag
+    const canonical = document.createElement('link');
+    canonical.rel = 'canonical';
     canonical.href = currentUrl;
+    document.head.appendChild(canonical);
+    
+    // Also add alternate link for consistency (prevents duplicate content issues)
+    const existingAlternates = document.querySelectorAll('link[rel="alternate"]');
+    existingAlternates.forEach(tag => {
+      if (tag.getAttribute('hreflang') === 'x-default') {
+        tag.remove();
+      }
+    });
+    
+    const alternate = document.createElement('link');
+    alternate.rel = 'alternate';
+    alternate.hreflang = 'x-default';
+    alternate.href = currentUrl;
+    document.head.appendChild(alternate);
 
     // Add structured data (JSON-LD)
     // Remove all existing structured data scripts
