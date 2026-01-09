@@ -197,9 +197,18 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
         }
       }
 
-      // Calculate totals from items
-      const totalAmount = items.reduce((sum, item) => sum + (parseFloat(item.amount || 0) * parseFloat(item.quantity || 1)), 0);
-      const totalGST = items.reduce((sum, item) => sum + (parseFloat(item.gst || 0) * parseFloat(item.quantity || 1)), 0);
+      // Calculate totals from items (preserve decimals, no rounding)
+      const totalAmount = items.reduce((sum, item) => {
+        const itemAmount = parseFloat(item.amount || 0);
+        const itemQuantity = parseFloat(item.quantity || 1);
+        return sum + (itemAmount * itemQuantity);
+      }, 0);
+      
+      const totalGST = items.reduce((sum, item) => {
+        const itemGST = parseFloat(item.gst || 0);
+        const itemQuantity = parseFloat(item.quantity || 1);
+        return sum + (itemGST * itemQuantity);
+      }, 0);
 
       await fetchApi(PAYMENT_API_URL, {
         method: 'POST',
@@ -207,14 +216,14 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
         body: JSON.stringify({
           customer_id: customerId,
           payment_date: date,
-          amount: totalAmount,
-          gst: totalGST,
+          amount: totalAmount, // Send as-is, preserve decimals
+          gst: totalGST, // Send as-is, preserve decimals (e.g., 37.5 stays 37.5)
           payment_type: paymentType,
           service: service,
           items: items.map(item => ({
             name: item.name,
-            amount: parseFloat(item.amount || 0),
-            gst: parseFloat(item.gst || 0),
+            amount: parseFloat(item.amount || 0), // Preserve decimals
+            gst: parseFloat(item.gst || 0), // Preserve decimals (e.g., 37.5 stays 37.5)
             quantity: parseFloat(item.quantity || 1),
           })),
         })
@@ -410,6 +419,7 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
                           onChange={(e) => handleItemChange(index, 'gst', e.target.value)}
                           required
                           min="0"
+                          step="0.01"
                           placeholder="GST"
                           inputClassName="bg-white text-gray-900 border-gray-300"
                           labelClassName="text-gray-700 font-semibold text-sm"
@@ -425,15 +435,15 @@ const PaymentDrawer = ({ open, onClose, form, customer, onSuccess }) => {
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center text-gray-700 mb-2">
                   <span className="font-semibold">Total Amount:</span>
-                  <span className="font-bold text-lg">₹{totalAmount.toLocaleString()}</span>
+                  <span className="font-bold text-lg">₹{totalAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-700 mb-2">
                   <span className="font-semibold">Total GST:</span>
-                  <span className="font-bold text-lg">₹{totalGST.toLocaleString()}</span>
+                  <span className="font-bold text-lg">₹{totalGST.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-900 mt-3 pt-3 border-t border-gray-300">
                   <span className="font-bold text-base">Grand Total:</span>
-                  <span className="font-bold text-xl">₹{grandTotal.toLocaleString()}</span>
+                  <span className="font-bold text-xl">₹{grandTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
                 </div>
               </div>
             </div>
