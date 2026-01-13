@@ -661,7 +661,7 @@ Your birthday month deserves fresh ink or a new piercing!`;
               onChange={handleChange}
               required
               placeholder="Country code and number (e.g., 919876543210)"
-              inputClassName="w-full bg-white/10 text-white border-white/30 placeholder:text-white/50"
+              inputClassName="w-full bg-white/10 border-white/30"
               labelClassName="text-white font-semibold"
             />
             <FormField
